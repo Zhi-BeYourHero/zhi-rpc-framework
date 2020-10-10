@@ -1,5 +1,8 @@
 package com.zhi;
 
+import com.zhi.registry.DefaultServiceRegistry;
+import com.zhi.remoting.socket.RpcServer;
+
 /**
  * @Description 启动rpcServer，并注册对应的服务
  * @Author WenZhiLuo
@@ -8,10 +11,10 @@ package com.zhi;
 public class RpcFrameworkSimpleServerMain {
     public static void main(String[] args) {
         HelloService helloService = new HelloServiceImpl();
-        RpcServer rpcServer = new RpcServer();
-        rpcServer.register(helloService, 9999);
-        // TODO 修改实现方式，通过map存放service解决只能注册一个service
-        System.out.println("后面的不会执行");
-        rpcServer.register(new HelloServiceImpl(), 9999);
+        DefaultServiceRegistry defaultServiceRegistry = new DefaultServiceRegistry();
+        //手动注册
+        defaultServiceRegistry.register(helloService);
+        RpcServer rpcServer = new RpcServer(defaultServiceRegistry);
+        rpcServer.start(9999);
     }
 }

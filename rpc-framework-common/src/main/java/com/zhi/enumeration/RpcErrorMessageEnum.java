@@ -14,7 +14,8 @@ import lombok.ToString;
 @ToString
 public enum  RpcErrorMessageEnum {
     SERVICE_INVOCATION_FAILURE("服务调用失败"),
-    SERVICE_CAN_NOT_BE_NULL("注册的服务不能为空");
+    SERVICE_CAN_NOT_BE_FOUND("没有找到指定的服务"),
+    SERVICE_NOT_IMPLEMENT_ANY_INTERFACE("注册的服务没有实现任何接口");
     //枚举类是天然单例，避免字段值修改为其他值，所以最好用final修饰。
     private final String message;
 }

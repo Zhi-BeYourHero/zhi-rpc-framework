@@ -2,6 +2,7 @@ package com.zhi.dto;
 
 import com.zhi.enumeration.RpcResponseCode;
 import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
  * @Date 2020-10-10 13:40
  */
 @Data
+@ToString
 public class RpcResponse<T> implements Serializable {
     private static final long serialVersionUID = 715745410605631233L;
     /**
