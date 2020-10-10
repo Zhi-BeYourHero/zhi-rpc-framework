@@ -11,5 +11,11 @@
 
     <artifactId>rpc-framework-simple</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.zhi</groupId>
+            <artifactId>rpc-framework-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>
