@@ -1,4 +1,4 @@
-package com.zhi.transport.netty;
+package com.zhi.transport.netty.codec;
 
 import com.zhi.serialize.Serializer;
 import io.netty.buffer.ByteBuf;
@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 
 /**
  * @Description
+ * 自定义编码器。负责处理"出站"消息，将消息格式转换字节数组然后写入到字节数据的容器 ByteBuf 对象中。
+ * <p>
+ * 网络传输需要通过字节流来实现，ByteBuf 可以看作是 Netty 提供的字节数据的容器，使用它会让我们更加方便地处理字节数据。
  * @Author WenZhiLuo
  * @Date 2020-10-11 11:17
  */

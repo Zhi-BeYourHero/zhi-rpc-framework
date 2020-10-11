@@ -1,9 +1,11 @@
-package com.zhi.transport.netty;
+package com.zhi.transport.netty.client;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
 import com.zhi.serialize.kyro.KryoSerializer;
 import com.zhi.transport.RpcClient;
+import com.zhi.transport.netty.codec.NettyKryoDecoder;
+import com.zhi.transport.netty.codec.NettyKryoEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @Description 消费侧客户端类
+ * @Description 客户端。发送消息到服务端，并接收服务端返回的方法执行结果
  * @Author WenZhiLuo
  * @Date 2020-10-11 14:37
  */

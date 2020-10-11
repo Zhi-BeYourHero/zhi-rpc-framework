@@ -1,7 +1,5 @@
 package com.zhi;
 
-import com.zhi.Hello;
-import com.zhi.HelloService;
 import com.zhi.transport.RpcClient;
 import com.zhi.transport.RpcClientProxy;
 import com.zhi.transport.socket.SocketRpcClient;

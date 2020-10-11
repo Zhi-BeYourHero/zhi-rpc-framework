@@ -1,8 +1,10 @@
-package com.zhi.transport.netty;
+package com.zhi.transport.netty.server;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
 import com.zhi.serialize.kyro.KryoSerializer;
+import com.zhi.transport.netty.codec.NettyKryoDecoder;
+import com.zhi.transport.netty.codec.NettyKryoEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -17,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @Description
+ * @Description 服务端。接收客户端消息，并且根据客户端的消息调用相应的方法，然后返回结果给客户端。
  * @Author WenZhiLuo
  * @Date 2020-10-11 9:34
  */

@@ -2,7 +2,7 @@ package com.zhi;
 
 import com.zhi.transport.RpcClient;
 import com.zhi.transport.RpcClientProxy;
-import com.zhi.transport.netty.NettyRpcClient;
+import com.zhi.transport.netty.client.NettyRpcClient;
 
 /**
  * @Description

@@ -1,5 +1,6 @@
 package com.zhi.transport.socket;
 
+import com.zhi.utils.concurrent.ThreadPoolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +15,11 @@ import java.util.concurrent.*;
  * @Date 2020-10-10 11:10
  */
 public class SocketRpcServer {
-    /**
-     * 线程池参数
-     */
-    private static final int CORE_POOL_SIZE = 10;
-    private static final int MAXIMUM_POOL_SIZE_SIZE = 100;
-    private static final int KEEP_ALIVE_TIME = 1;
-    private static final int BLOCKING_QUEUE_CAPACITY = 100;
     private ExecutorService threadPool;
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcServer.class);
 
     public SocketRpcServer() {
-        BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
-        ThreadFactory threadFactory = Executors.defaultThreadFactory();
-        this.threadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE_SIZE, KEEP_ALIVE_TIME, TimeUnit.MINUTES, workQueue, threadFactory);
+        this.threadPool = ThreadPoolFactory.createDefaultThreadPool("socket-server-rpc-pool");
     }
 
     /**

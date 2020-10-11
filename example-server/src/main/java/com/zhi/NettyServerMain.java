@@ -2,7 +2,7 @@ package com.zhi;
 
 import com.zhi.registry.DefaultServiceRegistry;
 import com.zhi.registry.ServiceRegistry;
-import com.zhi.transport.netty.NettyRpcServer;
+import com.zhi.transport.netty.server.NettyRpcServer;
 
 /**
  * @Description

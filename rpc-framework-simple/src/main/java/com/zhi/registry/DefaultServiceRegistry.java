@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Description 默认的服务注册表
+ * 默认的服务注册中心实现，通过 Map 保存服务信息，可以通过 zookeeper 来改进
  * @Author WenZhiLuo
  * @Date 2020-10-10 14:16
  */
