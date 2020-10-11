@@ -1,7 +1,6 @@
 package com.zhi;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -10,8 +9,12 @@ import java.io.Serializable;
  * @Author WenZhiLuo
  * @Date 2020-10-10 10:22
  */
-@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+@ToString
 public class Hello implements Serializable {
     private String message;
     private String description;

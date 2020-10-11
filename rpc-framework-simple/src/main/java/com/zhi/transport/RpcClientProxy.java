@@ -1,7 +1,6 @@
-package com.zhi.remoting.socket;
+package com.zhi.transport;
 
 import com.zhi.dto.RpcRequest;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationHandler;
@@ -9,15 +8,16 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * @Description
+ * @Description 进行了优化，解耦合，
  * @Author WenZhiLuo
  * @Date 2020-10-10 10:38
  */
-@AllArgsConstructor
 public class RpcClientProxy implements InvocationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcClientProxy.class);
-    private String host;
-    private int port;
+    private RpcClient rpcClient;
+    public RpcClientProxy(RpcClient rpcClient) {
+        this.rpcClient = rpcClient;
+    }
 
     @SuppressWarnings("unchecked")
     public <T> T getProxy(Class<T> clazz) {
@@ -42,7 +42,6 @@ public class RpcClientProxy implements InvocationHandler {
                 .parameters(args)
                 .paramTypes(method.getParameterTypes())
                 .build();
-        RpcClient rpcClient = new RpcClient();
-        return rpcClient.sendRpcRequest(rpcRequest, host, port);
+        return rpcClient.sendRpcRequest(rpcRequest);
     }
 }

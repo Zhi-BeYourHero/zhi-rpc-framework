@@ -1,8 +1,5 @@
-package com.zhi.remoting.socket;
+package com.zhi.transport.socket;
 
-import com.zhi.WorkThread;
-import com.zhi.registry.ServiceRegistry;
-import com.zhi.remoting.RpcRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +9,11 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 /**
- * @Description
+ * @Description v[2.0]进行了优化，RpcRequestHandler和ServiceRegistry由SocketRpcRequestHandlerRunnable创建，Server端更优雅
  * @Author WenZhiLuo
  * @Date 2020-10-10 11:10
  */
-public class RpcServer {
+public class SocketRpcServer {
     /**
      * 线程池参数
      */
@@ -25,12 +22,9 @@ public class RpcServer {
     private static final int KEEP_ALIVE_TIME = 1;
     private static final int BLOCKING_QUEUE_CAPACITY = 100;
     private ExecutorService threadPool;
-    private RpcRequestHandler rpcRequestHandler = new RpcRequestHandler();
-    private final ServiceRegistry serviceRegistry;
-    private static final Logger LOGGER = LoggerFactory.getLogger(RpcServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcServer.class);
 
-    public RpcServer(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
+    public SocketRpcServer() {
         BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         this.threadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE_SIZE, KEEP_ALIVE_TIME, TimeUnit.MINUTES, workQueue, threadFactory);
@@ -55,7 +49,7 @@ public class RpcServer {
                 LOGGER.info("client connected...");
                 //将socket交给线程池进行处理，
                 //线程池还可以让线程的创建和回收成本相对较低，并且我们可以指定线程池的可创建线程的最大数量，这样就不会导致线程创建过多，机器资源被不合理消耗。
-                threadPool.execute(new RpcRequestHandlerRunnable(socket, rpcRequestHandler, serviceRegistry));
+                threadPool.execute(new SocketRpcRequestHandlerRunnable(socket));
             }
             threadPool.shutdown();
         } catch (IOException e) {

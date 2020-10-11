@@ -1,9 +1,10 @@
-package com.zhi.remoting.socket;
+package com.zhi.transport.socket;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
+import com.zhi.registry.DefaultServiceRegistry;
 import com.zhi.registry.ServiceRegistry;
-import com.zhi.remoting.RpcRequestHandler;
+import com.zhi.transport.RpcRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,16 +18,20 @@ import java.net.Socket;
  * @Author WenZhiLuo
  * @Date 2020-10-10 15:26
  */
-public class RpcRequestHandlerRunnable implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RpcRequestHandlerRunnable.class);
+public class SocketRpcRequestHandlerRunnable implements Runnable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcRequestHandlerRunnable.class);
     private Socket socket;
-    private RpcRequestHandler rpcRequestHandler;
-    private ServiceRegistry serviceRegistry;
+    //TODO 修改了RpcRequestHandler和ServiceRegistry的创造方式，不再从方法参数传过来，而是由静态代码块加载,那么问题来了，为什么要这样设置？
+    private static RpcRequestHandler rpcRequestHandler;
+    private static ServiceRegistry serviceRegistry;
 
-    public RpcRequestHandlerRunnable(Socket socket, RpcRequestHandler rpcRequestHandler, ServiceRegistry serviceRegistry) {
+    static {
+        rpcRequestHandler = new RpcRequestHandler();
+        serviceRegistry = new DefaultServiceRegistry();
+    }
+
+    public SocketRpcRequestHandlerRunnable(Socket socket) {
         this.socket = socket;
-        this.rpcRequestHandler = rpcRequestHandler;
-        this.serviceRegistry = serviceRegistry;
     }
 
     @Override

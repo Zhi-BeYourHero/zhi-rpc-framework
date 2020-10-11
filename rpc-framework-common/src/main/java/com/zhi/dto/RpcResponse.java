@@ -1,17 +1,20 @@
 package com.zhi.dto;
 
 import com.zhi.enumeration.RpcResponseCode;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 
 /**
- * @Description
+ * @Description v[2.0]从原来的导入@Data改为指定需要的，估计是避免不必要的方法吧
  * @Author WenZhiLuo
  * @Date 2020-10-10 13:40
  */
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
 @ToString
 public class RpcResponse<T> implements Serializable {
     private static final long serialVersionUID = 715745410605631233L;

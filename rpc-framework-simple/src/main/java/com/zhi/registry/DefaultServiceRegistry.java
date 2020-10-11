@@ -21,10 +21,11 @@ public class DefaultServiceRegistry implements ServiceRegistry {
      * 接口名和服务的对应关系，TODO 处理一个接口被两个实现类实现的情况
      * key:service/interface name
      * value:service
+     * v[2.0]从原来的只有final修改为static final
      */
-    private final Map<String, Object> serviceMap = new ConcurrentHashMap<>();
+    private static final Map<String, Object> SERVICE_MAP = new ConcurrentHashMap<>();
     //这里的是serviceMap的keySet
-    private final Set<String> registeredService = ConcurrentHashMap.newKeySet();
+    private static final Set<String> REGISTERED_SERVICE = ConcurrentHashMap.newKeySet();
 
     /**
      * TODO 修改为扫描注解注册
@@ -36,16 +37,16 @@ public class DefaultServiceRegistry implements ServiceRegistry {
     public <T> void register(T service) {
         //Canonical：经典的，权威的
         String serviceName = service.getClass().getCanonicalName();
-        if (registeredService.contains(serviceName)) {
+        if (REGISTERED_SERVICE.contains(serviceName)) {
             return;
         }
-        registeredService.add(serviceName);
+        REGISTERED_SERVICE.add(serviceName);
         Class<?>[] interfaces = service.getClass().getInterfaces();
         if (interfaces.length == 0) {
             throw new RpcException(RpcErrorMessageEnum.SERVICE_NOT_IMPLEMENT_ANY_INTERFACE);
         }
         for (Class<?> anInterface : interfaces) {
-            serviceMap.put(anInterface.getCanonicalName(), service);
+            SERVICE_MAP.put(anInterface.getCanonicalName(), service);
         }
         LOGGER.info("Add service: {} and interfaces:{}", serviceName, service.getClass().getInterfaces());
     }
@@ -56,7 +57,7 @@ public class DefaultServiceRegistry implements ServiceRegistry {
      */
     @Override
     public Object getService(String serviceName) {
-        Object service = serviceMap.get(serviceName);
+        Object service = SERVICE_MAP.get(serviceName);
         if (service == null) {
             throw new RpcException(RpcErrorMessageEnum.SERVICE_CAN_NOT_BE_FOUND);
         }
