@@ -2,8 +2,6 @@ package com.zhi.transport.netty.server;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
-import com.zhi.registry.DefaultServiceRegistry;
-import com.zhi.registry.ServiceRegistry;
 import com.zhi.transport.RpcRequestHandler;
 import com.zhi.utils.concurrent.ThreadPoolFactory;
 import io.netty.channel.*;
@@ -24,31 +22,28 @@ import java.util.concurrent.ExecutorService;
  */
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServerHandler.class);
-    private static RpcRequestHandler rpcRequestHandler;
-    private static ServiceRegistry serviceRegistry;
-    private static ExecutorService threadPool;
+    private static final RpcRequestHandler RPC_REQUEST_HANDLER;
+    private static final ExecutorService THREAD_POOL;
+    private static final String THREAD_NAME_PREFIX = "netty-server-handler-rpc-pool";
     static {
-        rpcRequestHandler = new RpcRequestHandler();
-        serviceRegistry = new DefaultServiceRegistry();
-        threadPool = ThreadPoolFactory.createDefaultThreadPool("netty-server-handler-rpc-pool");
+        RPC_REQUEST_HANDLER = new RpcRequestHandler();
+        THREAD_POOL = ThreadPoolFactory.createDefaultThreadPool(THREAD_NAME_PREFIX);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        threadPool.execute(() -> {
+        THREAD_POOL.execute(() -> {
             try {
                 //1.获取请求
                 RpcRequest rpcRequest = (RpcRequest) msg;
                 LOGGER.info(String.format("server receive message: %s", rpcRequest));
                 String interfaceName = rpcRequest.getInterfaceName();
-                //2.获取对应的服务,通过注册中心获取到目标类（客户端需要调用类）
-                Object service = serviceRegistry.getService(interfaceName);
                 //3.调用对应的服务,执行目标方法（客户端需要执行的方法）并且返回方法结果
-                Object result = rpcRequestHandler.handle(rpcRequest, service);
+                Object result = RPC_REQUEST_HANDLER.handle(rpcRequest);
                 //4.输出结果
                 LOGGER.info(String.format("server get result: %s", result.toString()));
                 //5.服务端响应消息給客户端
-                ChannelFuture channelFuture = ctx.writeAndFlush(RpcResponse.success(result));
+                ChannelFuture channelFuture = ctx.writeAndFlush(RpcResponse.success(result, rpcRequest.getRequestId()));
                 //6.添加关闭事件的监听器
                 channelFuture.addListener(ChannelFutureListener.CLOSE);
             } finally {

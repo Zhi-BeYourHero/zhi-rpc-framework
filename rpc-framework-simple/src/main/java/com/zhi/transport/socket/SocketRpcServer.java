@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  * @Date 2020-10-10 11:10
  */
 public class SocketRpcServer {
-    private ExecutorService threadPool;
+    private final ExecutorService threadPool;
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcServer.class);
 
     public SocketRpcServer() {

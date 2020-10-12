@@ -2,7 +2,7 @@ package com.zhi;
 
 import com.zhi.registry.DefaultServiceRegistry;
 import com.zhi.registry.ServiceRegistry;
-import com.zhi.transport.netty.server.NettyRpcServer;
+import com.zhi.transport.netty.server.NettyServer;
 
 /**
  * @Description
@@ -16,7 +16,7 @@ public class NettyServerMain {
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         //手动注册
         serviceRegistry.register(helloService);
-        NettyRpcServer nettyRpcServer = new NettyRpcServer(9999);
-        nettyRpcServer.run();
+        NettyServer nettyServer = new NettyServer(9999);
+        nettyServer.run();
     }
 }

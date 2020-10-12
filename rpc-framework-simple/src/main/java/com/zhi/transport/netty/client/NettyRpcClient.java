@@ -3,9 +3,10 @@ package com.zhi.transport.netty.client;
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
 import com.zhi.serialize.kyro.KryoSerializer;
-import com.zhi.transport.RpcClient;
+import com.zhi.transport.ClientTransport;
 import com.zhi.transport.netty.codec.NettyKryoDecoder;
 import com.zhi.transport.netty.codec.NettyKryoEncoder;
+import com.zhi.utils.checker.RpcMessageChecker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * @Author WenZhiLuo
  * @Date 2020-10-11 14:37
  */
-public class NettyRpcClient implements RpcClient {
+public class NettyRpcClient implements ClientTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyRpcClient.class);
     private String host;
     private int port;
@@ -74,8 +75,11 @@ public class NettyRpcClient implements RpcClient {
                 //等待客户端监听端口关闭
                 channel.closeFuture().sync();
                 //通过AttributeKey获取通道从服务端获取的响应即RpcResponse
-                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse");
+                AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse" + rpcRequest.getRequestId());
                 RpcResponse rpcResponse = channel.attr(key).get();
+                LOGGER.info("client get rpcResponse from channel:{}", rpcResponse);
+                //校验 RpcRequest 和 RpcResponse
+                RpcMessageChecker.check(rpcRequest, rpcResponse);
                 return rpcResponse.getData();
             }
         } catch (InterruptedException e) {

@@ -2,10 +2,9 @@ package com.zhi.transport.socket;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
-import com.zhi.enumeration.RpcErrorMessageEnum;
-import com.zhi.enumeration.RpcResponseCode;
 import com.zhi.exception.RpcException;
-import com.zhi.transport.RpcClient;
+import com.zhi.transport.ClientTransport;
+import com.zhi.utils.checker.RpcMessageChecker;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +20,9 @@ import java.net.Socket;
  * @Date 2020-10-10 10:26
  */
 @AllArgsConstructor
-public class SocketRpcClient implements RpcClient {
+public class SocketRpcClient implements ClientTransport {
     public static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcClient.class);
-    //V[2.0]改了一下组织结构，将host和port从方法参数变成类成员变量，原因：
+    //TODO V[2.0]改了一下组织结构，将host和port从方法参数变成类成员变量，原因：
     private String host;
     private int port;
 
@@ -36,18 +35,12 @@ public class SocketRpcClient implements RpcClient {
             //3.通过输入流获取服务器响应的信息
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             RpcResponse rpcResponse = (RpcResponse) objectInputStream.readObject();
-            if (rpcResponse == null) {
-                LOGGER.error("调用服务失败,serviceName:{}", rpcRequest.getInterfaceName());
-                throw new RpcException(RpcErrorMessageEnum.SERVICE_INVOCATION_FAILURE, "interfaceName:" + rpcRequest.getInterfaceName());
-            }
-            if (rpcResponse.getCode() == null || !rpcResponse.getCode().equals(RpcResponseCode.SUCCESS.getCode())) {
-                LOGGER.error("调用服务失败,serviceName:{},RpcResponse:{}", rpcRequest.getInterfaceName(), rpcResponse);
-                throw new RpcException(RpcErrorMessageEnum.SERVICE_INVOCATION_FAILURE, "interfaceName:" + rpcRequest.getInterfaceName());
-            }
+            //校验 RpcResponse 和 RpcRequest
+            RpcMessageChecker.check(rpcRequest, rpcResponse);
             return rpcResponse.getData();
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error("occur exception:", e);
+            LOGGER.error("occur exception when send sendRpcRequest");
+            throw new RpcException("调用服务失败:", e);
         }
-        return null;
     }
 }

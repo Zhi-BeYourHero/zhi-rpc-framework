@@ -23,12 +23,13 @@ import org.slf4j.LoggerFactory;
  * @Author WenZhiLuo
  * @Date 2020-10-11 9:34
  */
-public class NettyRpcServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyRpcServer.class);
+public class NettyServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
     private final int port;
-    private KryoSerializer kryoSerializer;
+    //TODO 话说为什么这个变量应该是final的？
+    private final KryoSerializer kryoSerializer;
 
-    public NettyRpcServer(int port) {
+    public NettyServer(int port) {
         this.port = port;
         kryoSerializer = new KryoSerializer();
     }
@@ -56,8 +57,9 @@ public class NettyRpcServer {
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     //初始化服务器可连接队列大小，服务器处理客户端连接请求是顺序处理的，所以同一时间只能一个客户端连接
                     //多个客户端来的时候，服务端将不能处理的请求放到队列中排队
+                    //表示系统用于临时存放已完成三次握手的请求的队列的最大长度,如果连接建立频繁，服务器处理创建新连接较慢，可以适当调大这个参数
                     .option(ChannelOption.SO_BACKLOG, 128)
-                    //一直保持连接状态...
+                    //一直保持连接状态...即是否开启 TCP 底层心跳机制
                     .option(ChannelOption.SO_KEEPALIVE, true);
             //绑定端口，同步等待绑定成功
             ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
