@@ -2,6 +2,8 @@ package com.zhi.transport.netty.client;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
+import com.zhi.registry.ServiceRegistry;
+import com.zhi.registry.ZkServiceRegistry;
 import com.zhi.transport.ClientTransport;
 import com.zhi.utils.checker.RpcMessageChecker;
 import io.netty.channel.Channel;
@@ -13,7 +15,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * @Description
+ * @Description 基于 Netty 传输 RpcRequest
  * 进行了重构吧，将原来的一个NettyRpcClient拆分成了ChannelProvider, NettyClient和NettyClientClientTransport
  * 原来Bootstrap的初始化和EventLoopGroup的初始化由NettyClient完成，channel的获取由ChannelProvider完成
  * @Author WenZhiLuo
@@ -21,14 +23,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Slf4j
 public class NettyClientClientTransport implements ClientTransport {
-    private InetSocketAddress inetSocketAddress;
-    public NettyClientClientTransport(InetSocketAddress inetSocketAddress) {
-        this.inetSocketAddress = inetSocketAddress;
+    private ServiceRegistry serviceRegistry;
+    public NettyClientClientTransport() {
+        serviceRegistry = new ZkServiceRegistry();
     }
     @Override
     public Object sendRpcRequest(RpcRequest rpcRequest) {
         AtomicReference<Object> result = new AtomicReference<>(null);
         try {
+            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
             Channel channel = ChannelProvider.get(inetSocketAddress);
             if (channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future -> {

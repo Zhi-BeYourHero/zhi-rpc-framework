@@ -9,8 +9,7 @@ import java.util.concurrent.*;
  * @Author WenZhiLuo
  * @Date 2020-10-11 16:48
  */
-@SuppressWarnings("checkstyle:FinalClass")
-public class ThreadPoolFactory {
+public final class ThreadPoolFactory {
     /**
      * 线程池参数
      */

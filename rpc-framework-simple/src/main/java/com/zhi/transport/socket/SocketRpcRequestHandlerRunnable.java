@@ -2,10 +2,9 @@ package com.zhi.transport.socket;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
-import com.zhi.transport.RpcRequestHandler;
+import com.zhi.handler.RpcRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,7 +35,6 @@ public class SocketRpcRequestHandlerRunnable implements Runnable {
         try (ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream())) {
             RpcRequest rpcRequest = (RpcRequest) objectInputStream.readObject();
-            String interfaceName = rpcRequest.getInterfaceName();
             Object result = RPC_REQUEST_HANDLER.handle(rpcRequest);
             objectOutputStream.writeObject(RpcResponse.success(result, rpcRequest.getRequestId()));
             objectOutputStream.flush();

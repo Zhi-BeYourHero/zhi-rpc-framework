@@ -1,10 +1,10 @@
-package com.zhi.transport;
+package com.zhi.handler;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
 import com.zhi.enumeration.RpcResponseCode;
-import com.zhi.registry.DefaultServiceRegistry;
-import com.zhi.registry.ServiceRegistry;
+import com.zhi.provider.ServiceProvider;
+import com.zhi.provider.ServiceProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +20,9 @@ import java.lang.reflect.Method;
  */
 public class RpcRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcRequestHandler.class);
-    private static final ServiceRegistry SERVICE_REGISTRY;
+    private static final ServiceProvider SERVICE_PROVIDER;
     static {
-        SERVICE_REGISTRY = new DefaultServiceRegistry();
+        SERVICE_PROVIDER = new ServiceProviderImpl();
     }
 
     /**
@@ -31,7 +31,7 @@ public class RpcRequestHandler {
     public Object handle(RpcRequest rpcRequest) {
         Object result = null;
         //通过注册中心获取到目标类（客户端需要调用类）
-        Object service = SERVICE_REGISTRY.getService(rpcRequest.getInterfaceName());
+        Object service = SERVICE_PROVIDER.getServiceProvider(rpcRequest.getInterfaceName());
         try {
             result = invokeTargetMethod(rpcRequest, service);
             LOGGER.info("service:{} successful invoke method:{}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
@@ -46,7 +46,7 @@ public class RpcRequestHandler {
      */
     private Object invokeTargetMethod(RpcRequest rpcRequest, Object service) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
-        if (method == null) {
+        if (null == method) {
             return RpcResponse.fail(RpcResponseCode.FAIL);
         }
         return method.invoke(service, rpcRequest.getParameters());

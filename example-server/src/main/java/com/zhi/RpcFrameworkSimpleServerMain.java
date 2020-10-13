@@ -1,6 +1,5 @@
 package com.zhi;
 
-import com.zhi.registry.DefaultServiceRegistry;
 import com.zhi.transport.socket.SocketRpcServer;
 
 /**
@@ -11,11 +10,7 @@ import com.zhi.transport.socket.SocketRpcServer;
 public class RpcFrameworkSimpleServerMain {
     public static void main(String[] args) {
         HelloService helloService = new HelloServiceImpl();
-        DefaultServiceRegistry defaultServiceRegistry = new DefaultServiceRegistry();
-        //手动注册
-        //DefaultServiceRegistry中的SERVICE_MAP和REGISTERED_SERVICE是static的，属于类级别，所有对象都共享的...
-        defaultServiceRegistry.register(helloService);
-        SocketRpcServer socketRpcServer = new SocketRpcServer();
-        socketRpcServer.start(9999);
+        SocketRpcServer socketRpcServer = new SocketRpcServer("127.0.0.1", 9999);
+        socketRpcServer.publishService(helloService, HelloService.class);
     }
 }

@@ -2,6 +2,10 @@ package com.zhi.transport.netty.server;
 
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
+import com.zhi.provider.ServiceProvider;
+import com.zhi.provider.ServiceProviderImpl;
+import com.zhi.registry.ServiceRegistry;
+import com.zhi.registry.ZkServiceRegistry;
 import com.zhi.serialize.kyro.KryoSerializer;
 import com.zhi.transport.netty.codec.NettyKryoDecoder;
 import com.zhi.transport.netty.codec.NettyKryoEncoder;
@@ -18,6 +22,8 @@ import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+
 /**
  * @Description 服务端。接收客户端消息，并且根据客户端的消息调用相应的方法，然后返回结果给客户端。
  * @Author WenZhiLuo
@@ -25,15 +31,33 @@ import org.slf4j.LoggerFactory;
  */
 public class NettyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
+    private final String host;
     private final int port;
     //TODO 话说为什么这个变量应该是final的？
     private final KryoSerializer kryoSerializer;
+    private final ServiceRegistry serviceRegistry;
+    private final ServiceProvider serviceProvider;
 
-    public NettyServer(int port) {
+    public NettyServer(String host, int port) {
+        this.host = host;
         this.port = port;
         kryoSerializer = new KryoSerializer();
+        this.serviceRegistry = new ZkServiceRegistry();
+        this.serviceProvider = new ServiceProviderImpl();
     }
-    public void run() {
+
+    /**
+     * 发布服务
+     * @param service
+     * @param serviceClass
+     * @param <T>
+     */
+    public <T> void publishService(Object service, Class<T> serviceClass) {
+        serviceProvider.addServiceProvider(service);
+        serviceRegistry.registerService(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+        start();
+    }
+    public void start() {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -62,7 +86,7 @@ public class NettyServer {
                     //一直保持连接状态...即是否开启 TCP 底层心跳机制
                     .option(ChannelOption.SO_KEEPALIVE, true);
             //绑定端口，同步等待绑定成功
-            ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {

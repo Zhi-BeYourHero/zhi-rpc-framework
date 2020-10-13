@@ -1,10 +1,14 @@
 package com.zhi.transport.socket;
 
+import com.zhi.provider.ServiceProvider;
+import com.zhi.provider.ServiceProviderImpl;
+import com.zhi.registry.ServiceRegistry;
+import com.zhi.registry.ZkServiceRegistry;
 import com.zhi.utils.concurrent.ThreadPoolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.*;
@@ -17,9 +21,31 @@ import java.util.concurrent.*;
 public class SocketRpcServer {
     private final ExecutorService threadPool;
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcServer.class);
-
-    public SocketRpcServer() {
+    /*
+    * 添加主机host和port,服务提供者和服务注册中心
+    * */
+    private final String host;
+    private final int port;
+    private final ServiceRegistry serviceRegistry;
+    private final ServiceProvider serviceProvider;
+    public SocketRpcServer(String host, int port) {
         this.threadPool = ThreadPoolFactory.createDefaultThreadPool("socket-server-rpc-pool");
+        this.host = host;
+        this.port = port;
+        this.serviceRegistry = new ZkServiceRegistry();
+        this.serviceProvider = new ServiceProviderImpl();
+    }
+
+    /**
+     * 发布服务
+     * @param service
+     * @param serviceClass
+     * @param <T>
+     */
+    public <T> void publishService(Object service, Class<T> serviceClass) {
+        serviceProvider.addServiceProvider(service);
+        serviceRegistry.registerService(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+        start();
     }
 
     /**
@@ -29,11 +55,11 @@ public class SocketRpcServer {
      * 3. 连接建立后，通过输入流读取客户端发送的请求信息
      * 4. 通过输出流向客户端发送响应信息
      * 5. 关闭相关资源
-     * @param port 端口
      */
-    public void start(int port) {
+    public void start() {
         //1.创建 ServerSocket 对象并且绑定一个端口
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try (ServerSocket serverSocket = new ServerSocket()) {
+            serverSocket.bind(new InetSocketAddress(host, port));
             LOGGER.info("server starts...");
             Socket socket;
             //2.通过 accept()方法监听客户端请求

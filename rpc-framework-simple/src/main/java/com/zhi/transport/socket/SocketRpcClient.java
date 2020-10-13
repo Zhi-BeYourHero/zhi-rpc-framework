@@ -3,15 +3,17 @@ package com.zhi.transport.socket;
 import com.zhi.dto.RpcRequest;
 import com.zhi.dto.RpcResponse;
 import com.zhi.exception.RpcException;
+import com.zhi.registry.ServiceRegistry;
+import com.zhi.registry.ZkServiceRegistry;
 import com.zhi.transport.ClientTransport;
 import com.zhi.utils.checker.RpcMessageChecker;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -23,12 +25,18 @@ import java.net.Socket;
 public class SocketRpcClient implements ClientTransport {
     public static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcClient.class);
     //TODO V[2.0]改了一下组织结构，将host和port从方法参数变成类成员变量，原因：
-    private String host;
-    private int port;
-
+    /*
+    * 从原来的手动指定host和port转为通过服务注册中心去获取主机地址
+    * */
+    private final ServiceRegistry serviceRegistry;
+    public SocketRpcClient() {
+        this.serviceRegistry = new ZkServiceRegistry();
+    }
     public Object sendRpcRequest(RpcRequest rpcRequest) {
+        InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
         //1. 创建Socket对象并且指定服务器的地址和端口号
-        try (Socket socket = new Socket(host, port)) {
+        try (Socket socket = new Socket()) {
+            socket.connect(inetSocketAddress);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             //2.通过输出流向服务器端发送请求信息
             objectOutputStream.writeObject(rpcRequest);

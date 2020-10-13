@@ -1,7 +1,5 @@
 package com.zhi;
 
-import com.zhi.registry.DefaultServiceRegistry;
-import com.zhi.registry.ServiceRegistry;
 import com.zhi.transport.netty.server.NettyServer;
 
 /**
@@ -11,12 +9,8 @@ import com.zhi.transport.netty.server.NettyServer;
  */
 public class NettyServerMain {
     public static void main(String[] args) {
-        //这里别用HelloService来进行接收，因为ServiceRegistry会通过实现类去找对应的接口...
-        HelloServiceImpl helloService = new HelloServiceImpl();
-        ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
-        //手动注册
-        serviceRegistry.register(helloService);
-        NettyServer nettyServer = new NettyServer(9999);
-        nettyServer.run();
+        HelloService helloService = new HelloServiceImpl();
+        NettyServer nettyServer = new NettyServer("127.0.0.1", 9999);
+        nettyServer.publishService(helloService, HelloService.class);
     }
 }
