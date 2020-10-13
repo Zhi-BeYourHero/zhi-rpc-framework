@@ -1,14 +1,14 @@
-package com.zhi.transport.netty.server;
+package com.zhi.remoting.transport.netty.server;
 
-import com.zhi.dto.RpcRequest;
-import com.zhi.dto.RpcResponse;
+import com.zhi.remoting.dto.RpcRequest;
+import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.provider.ServiceProvider;
 import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.registry.ServiceRegistry;
 import com.zhi.registry.ZkServiceRegistry;
-import com.zhi.serialize.kyro.KryoSerializer;
-import com.zhi.transport.netty.codec.NettyKryoDecoder;
-import com.zhi.transport.netty.codec.NettyKryoEncoder;
+import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
+import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
+import com.zhi.serialize.kryo.KryoSerializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -19,9 +19,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 
 /**
@@ -29,8 +27,8 @@ import java.net.InetSocketAddress;
  * @Author WenZhiLuo
  * @Date 2020-10-11 9:34
  */
+@Slf4j
 public class NettyServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
     private final String host;
     private final int port;
     //TODO 话说为什么这个变量应该是final的？
@@ -52,8 +50,8 @@ public class NettyServer {
      * @param serviceClass
      * @param <T>
      */
-    public <T> void publishService(Object service, Class<T> serviceClass) {
-        serviceProvider.addServiceProvider(service);
+    public <T> void publishService(T service, Class<T> serviceClass) {
+        serviceProvider.addServiceProvider(service, serviceClass);
         serviceRegistry.registerService(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
         start();
     }
@@ -90,7 +88,7 @@ public class NettyServer {
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            LOGGER.error("occur exception when start server：", e);
+            log.error("occur exception when start server：", e);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

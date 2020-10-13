@@ -1,6 +1,6 @@
 package com.zhi;
 
-import com.zhi.dto.RpcRequest;
+import com.zhi.remoting.dto.RpcRequest;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

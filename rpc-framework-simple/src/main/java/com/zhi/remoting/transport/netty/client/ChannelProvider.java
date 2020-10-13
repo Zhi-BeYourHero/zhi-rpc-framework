@@ -1,4 +1,4 @@
-package com.zhi.transport.netty.client;
+package com.zhi.remoting.transport.netty.client;
 
 import com.zhi.enumeration.RpcErrorMessageEnum;
 import com.zhi.exception.RpcException;
@@ -25,14 +25,10 @@ public class ChannelProvider {
      * 最多重试次数
      */
     private static final int MAX_RETRY_COUNT = 5;
-    public static Channel get(InetSocketAddress inetSocketAddress) {
+    public static Channel get(InetSocketAddress inetSocketAddress) throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        try {
-            connect(BOOTSTRAP, inetSocketAddress, countDownLatch);
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            log.error("occur exception when get channel: ", e);
-        }
+        connect(BOOTSTRAP, inetSocketAddress, countDownLatch);
+        countDownLatch.await();
         return channel;
     }
 

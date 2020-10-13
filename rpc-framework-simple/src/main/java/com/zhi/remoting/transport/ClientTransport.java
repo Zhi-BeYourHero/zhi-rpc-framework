@@ -1,6 +1,6 @@
-package com.zhi.transport;
+package com.zhi.remoting.transport;
 
-import com.zhi.dto.RpcRequest;
+import com.zhi.remoting.dto.RpcRequest;
 
 /**
  * @Description 实现了 RpcClient 接口的对象需要具有发送 RpcRequest 的能力

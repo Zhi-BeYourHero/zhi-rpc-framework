@@ -1,9 +1,8 @@
 package com.zhi.proxy;
 
-import com.zhi.dto.RpcRequest;
-import com.zhi.transport.ClientTransport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.zhi.remoting.dto.RpcRequest;
+import com.zhi.remoting.transport.ClientTransport;
+import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -12,11 +11,12 @@ import java.util.UUID;
 /**
  * @Description 进行了优化，解耦合，通过代理类为每个RpcRequest随机生成一个requestId
  * 动态代理类。当动态代理对象调用一个方法的时候，实际调用的是下面的 invoke 方法
+ * 正是因为动态代理才让客户端调用的远程方法像是调用本地方法一样（屏蔽了中间过程）
  * @Author WenZhiLuo
  * @Date 2020-10-10 10:38
  */
+@Slf4j
 public class RpcClientProxy implements InvocationHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RpcClientProxy.class);
     /**
      * 用于发送请求给服务端，对应socket和netty两种实现方式
      */
@@ -41,7 +41,7 @@ public class RpcClientProxy implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        LOGGER.info("Call invoke method and invoked method: {}", method.getName());
+        log.info("Call invoke method and invoked method: {}", method.getName());
         RpcRequest rpcRequest = RpcRequest.builder().methodName(method.getName())
                 .interfaceName(method.getDeclaringClass().getName())
                 .parameters(args)

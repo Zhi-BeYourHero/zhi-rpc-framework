@@ -1,6 +1,6 @@
 package com.zhi;
 
-import com.zhi.transport.socket.SocketRpcServer;
+import com.zhi.remoting.transport.socket.SocketRpcServer;
 
 /**
  * @Description 测试用服务提供方（服务端）

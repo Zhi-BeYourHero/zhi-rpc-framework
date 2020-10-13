@@ -1,10 +1,10 @@
-package com.zhi.transport.netty.client;
+package com.zhi.remoting.transport.netty.client;
 
-import com.zhi.dto.RpcRequest;
-import com.zhi.dto.RpcResponse;
-import com.zhi.serialize.kyro.KryoSerializer;
-import com.zhi.transport.netty.codec.NettyKryoDecoder;
-import com.zhi.transport.netty.codec.NettyKryoEncoder;
+import com.zhi.remoting.dto.RpcRequest;
+import com.zhi.remoting.dto.RpcResponse;
+import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
+import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
+import com.zhi.serialize.kryo.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -21,17 +21,17 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class NettyClient {
-    private static final Bootstrap BOOTSTRAP;
-    private static final EventLoopGroup EVENT_LOOP_GROUP;
+    private static Bootstrap bootstrap;
+    private static EventLoopGroup eventLoopGroup;
 
     private NettyClient() {
     }
     // 初始化相关资源比如 EventLoopGroup、Bootstrap
     static {
-        EVENT_LOOP_GROUP = new NioEventLoopGroup();
-        BOOTSTRAP = new Bootstrap();
+        eventLoopGroup = new NioEventLoopGroup();
+        bootstrap = new Bootstrap();
         KryoSerializer kryoSerializer = new KryoSerializer();
-        BOOTSTRAP.group(EVENT_LOOP_GROUP)
+        bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 //连接的超时时间，超过这个时间还是建立不上的话则代表连接失败
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -53,10 +53,10 @@ public final class NettyClient {
     }
     public static void close() {
         log.info("call close method");
-        EVENT_LOOP_GROUP.shutdownGracefully();
+        eventLoopGroup.shutdownGracefully();
     }
 
     public static Bootstrap initializeBootstrap() {
-        return BOOTSTRAP;
+        return bootstrap;
     }
 }

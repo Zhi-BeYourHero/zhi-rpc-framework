@@ -1,15 +1,14 @@
-package com.zhi.transport.socket;
+package com.zhi.remoting.transport.socket;
 
-import com.zhi.dto.RpcRequest;
-import com.zhi.dto.RpcResponse;
+import com.zhi.remoting.dto.RpcRequest;
+import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.exception.RpcException;
-import com.zhi.registry.ServiceRegistry;
-import com.zhi.registry.ZkServiceRegistry;
-import com.zhi.transport.ClientTransport;
-import com.zhi.utils.checker.RpcMessageChecker;
+import com.zhi.registry.ServiceDiscovery;
+import com.zhi.registry.ZkServiceDiscovery;
+import com.zhi.remoting.transport.ClientTransport;
+import com.zhi.remoting.dto.RpcMessageChecker;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,18 +21,18 @@ import java.net.Socket;
  * @Date 2020-10-10 10:26
  */
 @AllArgsConstructor
+@Slf4j
 public class SocketRpcClient implements ClientTransport {
-    public static final Logger LOGGER = LoggerFactory.getLogger(SocketRpcClient.class);
     //TODO V[2.0]改了一下组织结构，将host和port从方法参数变成类成员变量，原因：
     /*
     * 从原来的手动指定host和port转为通过服务注册中心去获取主机地址
     * */
-    private final ServiceRegistry serviceRegistry;
+    private final ServiceDiscovery serviceDiscovery;
     public SocketRpcClient() {
-        this.serviceRegistry = new ZkServiceRegistry();
+        this.serviceDiscovery = new ZkServiceDiscovery();
     }
     public Object sendRpcRequest(RpcRequest rpcRequest) {
-        InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
         //1. 创建Socket对象并且指定服务器的地址和端口号
         try (Socket socket = new Socket()) {
             socket.connect(inetSocketAddress);
@@ -47,7 +46,6 @@ public class SocketRpcClient implements ClientTransport {
             RpcMessageChecker.check(rpcRequest, rpcResponse);
             return rpcResponse.getData();
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error("occur exception when send sendRpcRequest");
             throw new RpcException("调用服务失败:", e);
         }
     }

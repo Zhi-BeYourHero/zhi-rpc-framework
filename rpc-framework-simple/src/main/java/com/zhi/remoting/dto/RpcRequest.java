@@ -1,4 +1,4 @@
-package com.zhi.dto;
+package com.zhi.remoting.dto;
 
 import lombok.*;
 

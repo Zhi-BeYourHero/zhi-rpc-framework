@@ -1,8 +1,8 @@
 package com.zhi;
 
-import com.zhi.transport.ClientTransport;
+import com.zhi.remoting.transport.ClientTransport;
 import com.zhi.proxy.RpcClientProxy;
-import com.zhi.transport.socket.SocketRpcClient;
+import com.zhi.remoting.transport.socket.SocketRpcClient;
 
 /**
  * @Description 测试服务消费者（客户端）

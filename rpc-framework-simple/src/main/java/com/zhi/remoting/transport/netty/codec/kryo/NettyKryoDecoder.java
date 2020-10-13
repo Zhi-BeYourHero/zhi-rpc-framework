@@ -1,12 +1,11 @@
-package com.zhi.transport.netty.codec;
+package com.zhi.remoting.transport.netty.codec.kryo;
 
 import com.zhi.serialize.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
@@ -16,8 +15,8 @@ import java.util.List;
  * @Date 2020-10-11 11:38
  */
 @AllArgsConstructor
+@Slf4j
 public class NettyKryoDecoder extends ByteToMessageDecoder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyKryoDecoder.class);
     private Serializer serializer;
     private Class<?> genericClass;
     /**
@@ -43,6 +42,7 @@ public class NettyKryoDecoder extends ByteToMessageDecoder {
             int dataLength = in.readInt();
             //4.遇到不合理的情况直接return,讲真，我觉得第二个判断条件没必要，因为上一个if已经是>=4了
             if (dataLength < 0 || in.readableBytes() < 0) {
+                log.error("data length or byteBuf readableBytes is not valid");
                 return;
             }
             //5.如果可读字节数小于消息长度的话，说明消息消息是不完整的，重置readerIndex
@@ -55,6 +55,7 @@ public class NettyKryoDecoder extends ByteToMessageDecoder {
             in.readBytes(body);
             Object deserialize = serializer.deserialize(body, genericClass);
             out.add(deserialize);
+            log.info("successful decode ByteBuf to Object");
         }
     }
 }

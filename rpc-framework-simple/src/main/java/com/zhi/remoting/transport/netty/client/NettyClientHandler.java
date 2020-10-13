@@ -1,6 +1,6 @@
-package com.zhi.transport.netty.client;
+package com.zhi.remoting.transport.netty.client;
 
-import com.zhi.dto.RpcResponse;
+import com.zhi.remoting.dto.RpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;

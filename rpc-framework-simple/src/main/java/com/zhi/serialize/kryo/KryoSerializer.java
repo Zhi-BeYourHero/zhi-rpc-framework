@@ -1,15 +1,13 @@
-package com.zhi.serialize.kyro;
+package com.zhi.serialize.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.zhi.dto.RpcRequest;
-import com.zhi.dto.RpcResponse;
+import com.zhi.remoting.dto.RpcRequest;
+import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.exception.SerializeException;
 import com.zhi.serialize.Serializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
@@ -18,8 +16,8 @@ import java.io.ByteArrayOutputStream;
  * @Author WenZhiLuo
  * @Date 2020-10-11 10:33
  */
+@Slf4j
 public class KryoSerializer implements Serializer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KryoSerializer.class);
 
     /**
      * 由于 Kryo 不是线程安全的。每个线程都应该有自己的 Kryo，Input 和 Output 实例。
@@ -50,7 +48,6 @@ public class KryoSerializer implements Serializer {
             KRYO_THREAD_LOCAL.remove();
             return output.toBytes();
         } catch (Exception e) {
-            LOGGER.error("occur exception when serialize:", e);
             throw new SerializeException("序列化失败");
         }
     }
@@ -65,7 +62,7 @@ public class KryoSerializer implements Serializer {
             KRYO_THREAD_LOCAL.remove();
             return clazz.cast(obj);
         } catch (Exception e) {
-            LOGGER.error("occur exception when serialize:", e);
+            //既然要直接throw exception了，那自然也没有必要去手动再打日志了..
             throw new SerializeException("反序列化失败");
         }
     }
