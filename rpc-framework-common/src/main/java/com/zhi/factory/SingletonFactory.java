@@ -1,4 +1,4 @@
-package com.zhi.utils.factory;
+package com.zhi.factory;
 
 import java.util.HashMap;
 import java.util.Map;

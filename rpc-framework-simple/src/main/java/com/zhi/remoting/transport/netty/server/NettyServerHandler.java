@@ -3,8 +3,8 @@ package com.zhi.remoting.transport.netty.server;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.handler.RpcRequestHandler;
-import com.zhi.utils.concurrent.ThreadPoolFactory;
-import com.zhi.utils.factory.SingletonFactory;
+import com.zhi.utils.concurrent.ThreadPoolFactoryUtils;
+import com.zhi.factory.SingletonFactory;
 import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     public NettyServerHandler() {
         this.rpcRequestHandler = SingletonFactory.getInstance(RpcRequestHandler.class);
-        this.threadPool = ThreadPoolFactory.createDefaultThreadPool(THREAD_NAME_PREFIX);
+        this.threadPool = ThreadPoolFactoryUtils.createDefaultThreadPool(THREAD_NAME_PREFIX);
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

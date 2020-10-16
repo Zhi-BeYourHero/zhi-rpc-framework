@@ -1,5 +1,5 @@
 # zhi-rpc-framework
-zhi-rpc-framework 是一款基于 Netty+Kryo+Zookeeper 实现的 RPC 框架。代码注释详细，结构清晰，非常适合阅读和学习。
+zhi-rpc-framework 是一款基于 Netty+Kryo+Zookeeper 实现的 RPC 框架。代码注释详细，结构清晰，并且集成了 Check Style 规范代码结构，非常适合阅读和学习。
 ## 介绍
 **我们先从一个基本的 RPC 框架设计思路说起！**
 ### 一个基本的RPC框架设计思路

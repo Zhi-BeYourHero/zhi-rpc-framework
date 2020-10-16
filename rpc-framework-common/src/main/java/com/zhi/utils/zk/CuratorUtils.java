@@ -11,6 +11,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -19,16 +20,78 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Date 2020-10-12 22:03
  */
 @Slf4j
-public final class CuratorHelper {
+public final class CuratorUtils {
     private static final int BASE_SLEEP_TIME = 1000;
     private static final int MAX_RETRIES = 5;
     private static final String CONNECT_STRING = "127.0.0.1:2181";
     public static final String ZK_REGISTER_ROOT_PATH = "/my-rpc";
     private static Map<String, List<String>> serviceAddressMap = new ConcurrentHashMap<>();
+    private static Set<String> registeredPathSet = serviceAddressMap.keySet();
     //CuratorFramework还是尽量在CuratorHelper这个使用到了的这个类中进行初始化吧，要不然放在方法参数的话，
     //外部类每次调用这个工具类都要传一次显然是不合理的...
-    private static CuratorFramework zkClient = getZkClient();
-    private CuratorHelper() {
+    private static CuratorFramework zkClient;
+    static {
+        zkClient = getZkClient();
+    }
+    private CuratorUtils() {
+    }
+
+    /**
+     * 创建临时节点
+     * 临时节点驻存在ZooKeeper中，当连接和session断掉时被删除。
+     * v[3.0]进行了优化，先检验节点是否已经存在，如果已经存在就没有必要在创建了~
+     * v[3.1]创建持久化节点。不同于临时节点，持久化节点不会因为客户端断开连接而被删除
+     * @param path 节点路径
+     */
+    public static void createPersistentNode(String path) {
+        try {
+            if (registeredPathSet.contains(path) || zkClient.checkExists().forPath(path) != null) {
+                log.info("节点已经存在，节点为:[{}]", path);
+            } else {
+                //eg: /my-rpc/com.zhi.HelloService/127.0.0.1:9999
+                zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path);
+                log.info("节点创建成功，节点为:[{}]", path);
+            }
+            registeredPathSet.add(path);
+        } catch (Exception e) {
+            throw new RpcException(e.getMessage(), e.getCause());
+        }
+    }
+
+    /**
+     * 获取某个字节下的子节点，也就是获取所有提供服务的生产者的地址
+     * v[3.0]进行了优化，result不用一定要指定为null，后面如果报错直接throw exception
+     * @param serviceName 服务对象接口名 eg:com.zhi.HelloService
+     * @return 指定字节下的所有子节点
+     */
+    public static List<String> getChildrenNodes(String serviceName) {
+        if (serviceAddressMap.containsKey(serviceName)) {
+            return serviceAddressMap.get(serviceName);
+        }
+        List<String> result;
+        String servicePath = ZK_REGISTER_ROOT_PATH + "/" + serviceName;
+        try {
+            result = zkClient.getChildren().forPath(servicePath);
+            serviceAddressMap.put(serviceName, result);
+            registerWatcher(zkClient, serviceName);
+        } catch (Exception e) {
+            throw new RpcException(e.getMessage(), e.getCause());
+        }
+        return result;
+    }
+
+    /**
+     * 清除注册中心的数据
+     */
+    public static void clearRegistry() {
+        registeredPathSet.stream().parallel().forEach(p -> {
+            try {
+                zkClient.delete().forPath(p);
+            } catch (Exception e) {
+                throw new RpcException(e.getMessage(), e.getCause());
+            }
+            log.info("服务端（Provider）所有注册的服务都被清空:[{}]", registeredPathSet.toString());
+        });
     }
     //进行了优化，使用ExponentialBackoffRetry，代替RetryNTimes
     public static CuratorFramework getZkClient() {
@@ -44,50 +107,12 @@ public final class CuratorHelper {
     }
 
     /**
-     * 创建临时节点
-     * 临时节点驻存在ZooKeeper中，当连接和session断掉时被删除。
-     * v[3.0]进行了优化，先检验节点是否已经存在，如果已经存在就没有必要在创建了~
-     */
-    public static void createEphemeralNode(String path) {
-        try {
-            if (zkClient.checkExists().forPath(path) == null) {
-                zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path);
-                log.info("节点创建成功，节点为:[{}]", path);
-            } else {
-                log.info("节点已经存在，节点为:[{}]", path);
-            }
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e.getCause());
-        }
-    }
-
-    /**
-     * 获取某个字节下的子节点，也就是获取所有提供服务的生产者的地址
-     * v[3.0]进行了优化，result不用一定要指定为null，后面如果报错直接throw exception
-     */
-    public static List<String> getChildrenNodes(String serviceName) {
-        if (serviceAddressMap.containsKey(serviceName)) {
-            return serviceAddressMap.get(serviceName);
-        }
-        List<String> result;
-        String servicePath = CuratorHelper.ZK_REGISTER_ROOT_PATH + "/" + serviceName;
-        try {
-            result = zkClient.getChildren().forPath(servicePath);
-            serviceAddressMap.put(serviceName, result);
-            registerWatcher(zkClient, serviceName);
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e.getCause());
-        }
-        return result;
-    }
-
-    /**
-     * 注册监听
+     * 注册监听指定节点
      *
-     * @param serviceName 服务名称
+     * @param serviceName 服务对象接口名 eg:com.zhi.HelloService
      */
     private static void registerWatcher(CuratorFramework zkClient, String serviceName) {
-        String servicePath = CuratorHelper.ZK_REGISTER_ROOT_PATH + "/" + serviceName;
+        String servicePath = ZK_REGISTER_ROOT_PATH + "/" + serviceName;
         PathChildrenCache pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
         PathChildrenCacheListener pathChildrenCacheListener = (curatorFramework, pathChildrenCacheEvent) -> {
             List<String> serviceAddresses = curatorFramework.getChildren().forPath(servicePath);
@@ -97,7 +122,7 @@ public final class CuratorHelper {
         try {
             pathChildrenCache.start();
         } catch (Exception e) {
-            log.error("occur exception:", e);
+            throw new RpcException(e.getMessage(), e.getCause());
         }
     }
 }

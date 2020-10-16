@@ -1,7 +1,6 @@
 package com.zhi.utils.concurrent;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import java.util.concurrent.*;
 
 /**
@@ -9,7 +8,7 @@ import java.util.concurrent.*;
  * @Author WenZhiLuo
  * @Date 2020-10-11 16:48
  */
-public final class ThreadPoolFactory {
+public final class ThreadPoolFactoryUtils {
     /**
      * 线程池参数
      */
@@ -18,7 +17,7 @@ public final class ThreadPoolFactory {
     private static final int KEEP_ALIVE_TIME = 1;
     private static final int BLOCKING_QUEUE_CAPACITY = 100;
 
-    private ThreadPoolFactory() {
+    private ThreadPoolFactoryUtils() {
     }
 
     public static ExecutorService createDefaultThreadPool(String threadNamePrefix) {

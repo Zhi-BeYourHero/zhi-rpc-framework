@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport.netty.server;
 
+import com.zhi.config.CustomShutdownHook;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.provider.ServiceProvider;
@@ -85,6 +86,7 @@ public class NettyServer {
                     .option(ChannelOption.SO_KEEPALIVE, true);
             //绑定端口，同步等待绑定成功
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
+            CustomShutdownHook.getCustomShutdownHook().clearAll();
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
