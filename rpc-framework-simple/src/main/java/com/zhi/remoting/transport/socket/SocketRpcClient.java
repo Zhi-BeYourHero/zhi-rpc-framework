@@ -41,10 +41,7 @@ public class SocketRpcClient implements ClientTransport {
             objectOutputStream.writeObject(rpcRequest);
             //3.通过输入流获取服务器响应的信息
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-            RpcResponse rpcResponse = (RpcResponse) objectInputStream.readObject();
-            //校验 RpcResponse 和 RpcRequest
-            RpcMessageChecker.check(rpcRequest, rpcResponse);
-            return rpcResponse;
+            return objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcException("调用服务失败:", e);
         }

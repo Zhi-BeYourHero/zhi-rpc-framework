@@ -1,5 +1,6 @@
 package com.zhi.proxy;
 
+import com.zhi.remoting.dto.RpcMessageChecker;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.transport.ClientTransport;
@@ -47,22 +48,23 @@ public class RpcClientProxy implements InvocationHandler {
     @SneakyThrows
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
-        log.info("Call invoke method and invoked method: {}", method.getName());
+        log.info("invoked method: [{}]", method.getName());
         RpcRequest rpcRequest = RpcRequest.builder().methodName(method.getName())
                 .interfaceName(method.getDeclaringClass().getName())
                 .parameters(args)
                 .paramTypes(method.getParameterTypes())
                 .requestId(UUID.randomUUID().toString())
                 .build();
-        Object result = null;
+        RpcResponse rpcResponse = null;
         if (clientTransport instanceof NettyClientTransport) {
             CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) clientTransport.sendRpcRequest(rpcRequest);
-            result = completableFuture.get().getData();
+            rpcResponse = completableFuture.get();
         }
         if (clientTransport instanceof SocketRpcClient) {
-            RpcResponse rpcResponse = (RpcResponse) clientTransport.sendRpcRequest(rpcRequest);
-            result = rpcResponse.getData();
+            rpcResponse = (RpcResponse) clientTransport.sendRpcRequest(rpcRequest);
         }
-        return result;
+        //校验 RpcRequest 和 RpcResponse
+        RpcMessageChecker.check(rpcRequest, rpcResponse);
+        return rpcResponse.getData();
     }
 }
