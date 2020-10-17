@@ -2,7 +2,7 @@ package com.zhi;
 
 import com.zhi.remoting.transport.ClientTransport;
 import com.zhi.proxy.RpcClientProxy;
-import com.zhi.remoting.transport.netty.client.NettyClientClientTransport;
+import com.zhi.remoting.transport.netty.client.NettyClientTransport;
 
 /**
  * @Description
@@ -13,7 +13,7 @@ public class NettyClientMain {
     public static void main(String[] args) {
         //1. 获取客户端类,其成员变量主要由host和port, 和一个sendRpcRequest方法,后面由代理类来代理
         //由客户端指定host和port转为服务端指定，客户端获取service
-        ClientTransport clientTransport = new NettyClientClientTransport();
+        ClientTransport clientTransport = new NettyClientTransport();
         //2. 生成客户端代理类
         RpcClientProxy rpcClientProxy = new RpcClientProxy(clientTransport);
         //3. 根据客户端代理类获取我们需要的代理对象,这样代理方法就能生效

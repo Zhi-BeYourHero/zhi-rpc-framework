@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport.netty.client;
 
+import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -18,7 +19,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class NettyClientHandler extends ChannelInboundHandlerAdapter {
-
+    private final UnprocessedRequests unprocessedRequests;
+    public NettyClientHandler() {
+        unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+    }
     /**
      * 读取服务端传输的消息
      */
@@ -26,17 +30,9 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
             //客户端接收到的服务端响应
+            log.info("客户端接收到了消息：{}", msg);
             RpcResponse rpcResponse = (RpcResponse) msg;
-            log.info("客户端接收到了消息：{}", rpcResponse);
-            //以key值为rpcResponse的AttributeKey对象,类似于 Map 中的 key
-            AttributeKey<RpcResponse> key = AttributeKey.valueOf("rpcResponse" + rpcResponse.getRequestId());
-            /*
-             * AttributeMap 可以看作是一个Channel的共享数据源
-             * AttributeMap 的 key 是 AttributeKey，value 是 Attribute
-             * 将服务端的返回结果保存到 AttributeMap 上
-             */
-            ctx.channel().attr(key).set(rpcResponse);
-            ctx.channel().close();
+            unprocessedRequests.complete(rpcResponse);
         } finally {
             /*
             * 如果指定的消息实现了{@link ReferenceCounted}，尝试调用{@link ReferenceCounted#release()}。

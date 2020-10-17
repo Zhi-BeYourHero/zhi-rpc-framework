@@ -26,7 +26,7 @@ public final class CuratorUtils {
     private static final String CONNECT_STRING = "127.0.0.1:2181";
     public static final String ZK_REGISTER_ROOT_PATH = "/my-rpc";
     private static Map<String, List<String>> serviceAddressMap = new ConcurrentHashMap<>();
-    private static Set<String> registeredPathSet = serviceAddressMap.keySet();
+    private static Set<String> registeredPathSet = ConcurrentHashMap.newKeySet();
     //CuratorFramework还是尽量在CuratorHelper这个使用到了的这个类中进行初始化吧，要不然放在方法参数的话，
     //外部类每次调用这个工具类都要传一次显然是不合理的...
     private static CuratorFramework zkClient;
@@ -54,7 +54,7 @@ public final class CuratorUtils {
             }
             registeredPathSet.add(path);
         } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e.getCause());
+            e.printStackTrace();
         }
     }
 

@@ -24,8 +24,6 @@ public final class NettyClient {
     private static Bootstrap bootstrap;
     private static EventLoopGroup eventLoopGroup;
 
-    private NettyClient() {
-    }
     // 初始化相关资源比如 EventLoopGroup、Bootstrap
     static {
         eventLoopGroup = new NioEventLoopGroup();
@@ -56,7 +54,7 @@ public final class NettyClient {
         eventLoopGroup.shutdownGracefully();
     }
 
-    public static Bootstrap initializeBootstrap() {
+    public static Bootstrap getBootstrap() {
         return bootstrap;
     }
 }

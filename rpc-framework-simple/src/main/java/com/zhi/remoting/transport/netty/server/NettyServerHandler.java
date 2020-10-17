@@ -35,16 +35,17 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             try {
                 //1.获取请求
                 RpcRequest rpcRequest = (RpcRequest) msg;
-                log.info(String.format("server receive message: %s", rpcRequest));
-                String interfaceName = rpcRequest.getInterfaceName();
+                log.info("server receive msg: [{}] ", msg);
                 //3.调用对应的服务,执行目标方法（客户端需要执行的方法）并且返回方法结果
                 Object result = rpcRequestHandler.handle(rpcRequest);
                 //4.输出结果
                 log.info(String.format("server get result: %s", result.toString()));
-                //5.服务端响应消息給客户端
-                ChannelFuture channelFuture = ctx.writeAndFlush(RpcResponse.success(result, rpcRequest.getRequestId()));
-                //6.添加关闭事件的监听器
-                channelFuture.addListener(ChannelFutureListener.CLOSE);
+                if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                    //返回方法执行结果给客户端
+                    ctx.writeAndFlush(RpcResponse.success(result, rpcRequest.getRequestId()));
+                } else {
+                    log.error("not writable now, message dropped");
+                }
             } finally {
                 /* 确保 ByteBuf 被释放，不然可能会有内存泄露问题
                  * 如果指定的消息实现了{@link ReferenceCounted}，尝试调用{@link ReferenceCounted#release()}。

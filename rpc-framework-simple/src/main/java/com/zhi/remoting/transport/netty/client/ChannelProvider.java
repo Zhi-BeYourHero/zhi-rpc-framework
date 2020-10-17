@@ -6,7 +6,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
-
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
@@ -19,13 +18,14 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class ChannelProvider {
-    private static final Bootstrap BOOTSTRAP = NettyClient.initializeBootstrap();
+    private static final Bootstrap BOOTSTRAP = NettyClient.getBootstrap();
     private static Channel channel = null;
     /**
      * 最多重试次数
      */
     private static final int MAX_RETRY_COUNT = 5;
     public static Channel get(InetSocketAddress inetSocketAddress) throws InterruptedException {
+        //通过countDownLatch保证有序执行
         CountDownLatch countDownLatch = new CountDownLatch(1);
         connect(BOOTSTRAP, inetSocketAddress, countDownLatch);
         countDownLatch.await();
@@ -47,7 +47,6 @@ public class ChannelProvider {
                 return;
             }
             if (retry == 0) {
-                log.error("客户端连接失败:重试次数已用完，放弃连接！");
                 countDownLatch.countDown();
                 throw new RpcException(RpcErrorMessageEnum.CLIENT_CONNECT_SERVER_FAILURE);
             }
