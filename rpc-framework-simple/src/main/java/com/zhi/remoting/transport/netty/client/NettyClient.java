@@ -6,13 +6,14 @@ import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
 import com.zhi.serialize.kryo.KryoSerializer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @Description 负责BOOTSTRAP和EVENT_LOOP_GROUP的初始化
@@ -49,12 +50,19 @@ public final class NettyClient {
                     }
                 });
     }
+    @SneakyThrows
+    public Channel doConnect(InetSocketAddress inetSocketAddress) {
+        CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
+        bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                log.info("客户端连接成功!");
+                completableFuture.complete(future.channel());
+            }
+        });
+        return completableFuture.get();
+    }
     public static void close() {
         log.info("call close method");
         eventLoopGroup.shutdownGracefully();
-    }
-
-    public static Bootstrap getBootstrap() {
-        return bootstrap;
     }
 }

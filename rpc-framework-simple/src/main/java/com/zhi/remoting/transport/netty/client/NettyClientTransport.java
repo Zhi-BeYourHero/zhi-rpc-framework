@@ -31,28 +31,22 @@ public class NettyClientTransport implements ClientTransport {
     public CompletableFuture<RpcResponse> sendRpcRequest(RpcRequest rpcRequest) {
         //构建返回值
         CompletableFuture<RpcResponse> resultFuture = new CompletableFuture<>();
-        try {
-            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
-            Channel channel = ChannelProvider.get(inetSocketAddress);
-            if (channel != null && channel.isActive()) {
-                //放入未处理的请求
-                unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
-                channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future -> {
-                    if (future.isSuccess()) {
-                        log.info("客户端向服务端发送消息: {}", rpcRequest);
-                    } else {
-                        future.channel().close();
-                        resultFuture.completeExceptionally(future.cause());
-                        log.error("客户端发送消息失败：", future.cause());
-                    }
-                });
-            } else {
-                throw new IllegalStateException();
-            }
-        } catch (InterruptedException e) {
-            unprocessedRequests.remove(rpcRequest.getRequestId());
-            log.error(e.getMessage(), e);
-            Thread.currentThread().interrupt();
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
+        Channel channel = ChannelProvider.get(inetSocketAddress);
+        if (channel != null && channel.isActive()) {
+            //放入未处理的请求
+            unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
+            channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    log.info("客户端向服务端发送消息: {}", rpcRequest);
+                } else {
+                    future.channel().close();
+                    resultFuture.completeExceptionally(future.cause());
+                    log.error("客户端发送消息失败：", future.cause());
+                }
+            });
+        } else {
+            throw new IllegalStateException();
         }
         return resultFuture;
     }
