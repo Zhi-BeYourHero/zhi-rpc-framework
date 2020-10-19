@@ -1,15 +1,15 @@
 package com.zhi.remoting.transport.netty.server;
 
+import com.zhi.enumeration.RpcMessageTypeEnum;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.handler.RpcRequestHandler;
 import com.zhi.factory.SingletonFactory;
-import com.zhi.utils.concurrent.threadpool.CustomThreadPoolConfig;
-import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
 import io.netty.channel.*;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @Description Netty中处理RpcRequest的Handler
@@ -23,21 +23,20 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     private final RpcRequestHandler rpcRequestHandler;
-    private final ExecutorService threadPool;
-    private static final String THREAD_NAME_PREFIX = "netty-server-handler-rpc-pool";
 
     public NettyServerHandler() {
         this.rpcRequestHandler = SingletonFactory.getInstance(RpcRequestHandler.class);
-        CustomThreadPoolConfig customThreadPoolConfig = new CustomThreadPoolConfig();
-        customThreadPoolConfig.setCorePoolSize(6);
-        threadPool = ThreadPoolFactoryUtils.createCustomThreadPoolIfAbsent(THREAD_NAME_PREFIX, customThreadPoolConfig);
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
                 //1.获取请求
-                RpcRequest rpcRequest = (RpcRequest) msg;
                 log.info("server receive msg: [{}] ", msg);
+                RpcRequest rpcRequest = (RpcRequest) msg;
+                if (rpcRequest.getRpcMessageTypeEnum() == RpcMessageTypeEnum.HEART_BEAT) {
+                    log.info("receive heat beat msg from client");
+                    return;
+                }
                 //3.调用对应的服务,执行目标方法（客户端需要执行的方法）并且返回方法结果
                 Object result = rpcRequestHandler.handle(rpcRequest);
                 //4.输出结果
@@ -64,6 +63,18 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             }
     }
 
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleState state = ((IdleStateEvent) evt).state();
+            if (state == IdleState.READER_IDLE) {
+                log.info("idle check happen, so close the connection");
+                ctx.close();
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.error("server catch exception");

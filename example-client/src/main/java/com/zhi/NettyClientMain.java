@@ -10,7 +10,7 @@ import com.zhi.remoting.transport.netty.client.NettyClientTransport;
  * @Date 2020-10-11 15:50
  */
 public class NettyClientMain {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         //1. 获取客户端类,其成员变量主要由host和port, 和一个sendRpcRequest方法,后面由代理类来代理
         //由客户端指定host和port转为服务端指定，客户端获取service
         ClientTransport clientTransport = new NettyClientTransport();
@@ -25,9 +25,7 @@ public class NettyClientMain {
         String hello2 = helloService.hello(new Hello("111", "222"));
         assert "Hello description is 222".equals(hello2);
         System.out.println(hello2);
-        for (int i = 0; i < 50; i++) {
-            String des = helloService.hello(new Hello("111", "~~~" + i));
-            System.out.println(des);
-        }
+        Thread.sleep(12000);
+        helloService.hello(new Hello("111", "222"));
     }
 }
