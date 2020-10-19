@@ -34,7 +34,6 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        threadPool.execute(() -> {
             try {
                 //1.获取请求
                 RpcRequest rpcRequest = (RpcRequest) msg;
@@ -63,7 +62,6 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                  * */
                 ReferenceCountUtil.release(msg);
             }
-        });
     }
 
     @Override

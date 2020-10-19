@@ -63,7 +63,7 @@ public final class ThreadPoolFactoryUtils {
             try {
                 //阻塞直至所有的任务执行完成，超时10s
                 executorService.awaitTermination(10, TimeUnit.SECONDS);
-            } catch (InterruptedException ie) {
+            } catch (InterruptedException e) {
                 log.error("Thread pool never terminated");
                 executorService.shutdownNow();
             }
@@ -95,5 +95,22 @@ public final class ThreadPoolFactoryUtils {
             }
         }
         return Executors.defaultThreadFactory();
+    }
+
+    /**
+     * 打印线程池的状态
+     *
+     * @param threadPool 线程池对象
+     */
+    public static void printThreadPoolStatus(ThreadPoolExecutor threadPool) {
+        ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(1, createThreadFactory("print-thread-pool-status", false));
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            log.info("============ThreadPool Status=============");
+            log.info("ThreadPool Size: [{}]", threadPool.getPoolSize());
+            log.info("Active Threads: [{}]", threadPool.getActiveCount());
+            log.info("Number of Tasks : [{}]", threadPool.getCompletedTaskCount());
+            log.info("Number of Tasks in Queue: {}", threadPool.getQueue().size());
+            log.info("===========================================");
+        }, 0, 1, TimeUnit.SECONDS);
     }
 }
