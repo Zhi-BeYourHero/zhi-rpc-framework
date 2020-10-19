@@ -5,7 +5,7 @@ import com.zhi.provider.ServiceProvider;
 import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.registry.ServiceRegistry;
 import com.zhi.registry.ZkServiceRegistry;
-import com.zhi.utils.concurrent.ThreadPoolFactoryUtils;
+import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,7 +29,7 @@ public class SocketRpcServer {
     private final ServiceRegistry serviceRegistry;
     private final ServiceProvider serviceProvider;
     public SocketRpcServer(String host, int port) {
-        this.threadPool = ThreadPoolFactoryUtils.createDefaultThreadPool("socket-server-rpc-pool");
+        this.threadPool = ThreadPoolFactoryUtils.createCustomThreadPoolIfAbsent("socket-server-rpc-pool");
         this.host = host;
         this.port = port;
         this.serviceRegistry = new ZkServiceRegistry();

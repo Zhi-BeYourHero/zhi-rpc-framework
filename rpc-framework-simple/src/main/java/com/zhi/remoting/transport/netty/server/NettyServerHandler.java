@@ -3,8 +3,9 @@ package com.zhi.remoting.transport.netty.server;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.handler.RpcRequestHandler;
-import com.zhi.utils.concurrent.ThreadPoolFactoryUtils;
 import com.zhi.factory.SingletonFactory;
+import com.zhi.utils.concurrent.threadpool.CustomThreadPoolConfig;
+import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
 import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,9 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     public NettyServerHandler() {
         this.rpcRequestHandler = SingletonFactory.getInstance(RpcRequestHandler.class);
-        this.threadPool = ThreadPoolFactoryUtils.createDefaultThreadPool(THREAD_NAME_PREFIX);
+        CustomThreadPoolConfig customThreadPoolConfig = new CustomThreadPoolConfig();
+        customThreadPoolConfig.setCorePoolSize(6);
+        threadPool = ThreadPoolFactoryUtils.createCustomThreadPoolIfAbsent(THREAD_NAME_PREFIX, customThreadPoolConfig);
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -42,7 +45,13 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                 log.info(String.format("server get result: %s", result.toString()));
                 if (ctx.channel().isActive() && ctx.channel().isWritable()) {
                     //返回方法执行结果给客户端
-                    ctx.writeAndFlush(RpcResponse.success(result, rpcRequest.getRequestId()));
+                    //添加监听器，
+                    RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
+                    /**
+                     * A {@link ChannelFutureListener} that closes the {@link Channel} when the
+                     * operation ended up with a failure or cancellation rather than a success.
+                     */
+                    ctx.writeAndFlush(rpcResponse).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                 } else {
                     log.error("not writable now, message dropped");
                 }

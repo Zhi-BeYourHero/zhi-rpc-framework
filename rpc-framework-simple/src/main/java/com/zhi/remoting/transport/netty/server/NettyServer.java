@@ -30,12 +30,12 @@ import java.net.InetSocketAddress;
  */
 @Slf4j
 public class NettyServer {
-    private final String host;
-    private final int port;
-    //TODO 话说为什么这个变量应该是final的？
-    private final KryoSerializer kryoSerializer;
-    private final ServiceRegistry serviceRegistry;
-    private final ServiceProvider serviceProvider;
+    private String host;
+    private int port;
+    //TODO 话说为什么这个变量应该是final的？。。。 然后又删了
+    private KryoSerializer kryoSerializer;
+    private ServiceRegistry serviceRegistry;
+    private ServiceProvider serviceProvider;
 
     public NettyServer(String host, int port) {
         this.host = host;
@@ -57,6 +57,8 @@ public class NettyServer {
         start();
     }
     public void start() {
+        //这个钩子的添加从末尾改到前面...当服务端(provider)关闭时候做一些事情，比如说取消注册所有服务
+        CustomShutdownHook.getCustomShutdownHook().clearAll();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -65,6 +67,7 @@ public class NettyServer {
                     //设置server通道类型
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
+                    // 当客户端第一次进行请求的时候才会进行初始化
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
@@ -86,12 +89,12 @@ public class NettyServer {
                     .option(ChannelOption.SO_KEEPALIVE, true);
             //绑定端口，同步等待绑定成功
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
-            CustomShutdownHook.getCustomShutdownHook().clearAll();
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             log.error("occur exception when start server：", e);
         } finally {
+            log.error("shutdown bossGroup and workerGroup");
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }

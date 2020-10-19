@@ -38,7 +38,7 @@ public class NettyClientTransport implements ClientTransport {
             unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
             channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
-                    log.info("客户端向服务端发送消息: {}", rpcRequest);
+                    log.info("客户端向服务端发送消息: [{}]", rpcRequest);
                 } else {
                     future.channel().close();
                     resultFuture.completeExceptionally(future.cause());

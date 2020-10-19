@@ -22,8 +22,12 @@ public class NettyClientMain {
         String hello = helloService.hello(new Hello("人生没有生么值不值得，别总是患得患失，干就完事儿", "罗文智是大帅哥(我不管，我觉得是就是)"));
         System.out.println(hello);
         //如需使用 assert 断言，需要在 VM options 添加参数：-ea
-        //assert "Hello description is 222".equals(hello);
         String hello2 = helloService.hello(new Hello("111", "222"));
+        assert "Hello description is 222".equals(hello2);
         System.out.println(hello2);
+        for (int i = 0; i < 50; i++) {
+            String des = helloService.hello(new Hello("111", "~~~" + i));
+            System.out.println(des);
+        }
     }
 }
