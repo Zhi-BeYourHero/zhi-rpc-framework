@@ -28,6 +28,8 @@ public class NettyClientMain {
         assert "Hello description is 222".equals(hello2);
         System.out.println(hello2);
         Thread.sleep(12000);
-        helloService.hello(new Hello("111", "222"));
+        for (int i = 0; i < 10; i++) {
+            helloService.hello(new Hello("111", "222"));
+        }
     }
 }
