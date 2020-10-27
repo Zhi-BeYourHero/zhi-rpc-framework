@@ -1,5 +1,6 @@
 package com.zhi;
 
+import com.zhi.api.HelloService;
 import com.zhi.remoting.transport.socket.SocketRpcServer;
 
 /**

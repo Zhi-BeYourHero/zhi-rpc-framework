@@ -1,4 +1,4 @@
-package com.zhi;
+package com.zhi.api;
 
 import lombok.*;
 

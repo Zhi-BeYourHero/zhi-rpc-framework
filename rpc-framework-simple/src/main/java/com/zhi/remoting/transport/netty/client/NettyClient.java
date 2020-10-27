@@ -64,6 +64,7 @@ public final class NettyClient {
     @SneakyThrows
     public Channel doConnect(InetSocketAddress inetSocketAddress) {
         CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
+        //异步地连接到远程节点,注册一个 ChannelFutureListener，以便在操作完成时获得通知
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 log.info("客户端连接成功!");

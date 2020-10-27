@@ -1,5 +1,7 @@
 package com.zhi;
 
+import com.zhi.api.Hello;
+import com.zhi.api.HelloService;
 import com.zhi.remoting.transport.ClientTransport;
 import com.zhi.proxy.RpcClientProxy;
 import com.zhi.remoting.transport.socket.SocketRpcClient;

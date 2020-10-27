@@ -27,7 +27,7 @@ zhi-rpc-framework 是一款基于 Netty+Kryo+Zookeeper 实现的 RPC 框架。�
 - [x] **使用Zookeeper管理相关服务地址信息**
 - [x] Netty重用Channel避免重复连接服务端
 - [x] 使用 `CompletableFuture` 包装接受客户端返回结果（之前的实现是通过 `AttributeMap` 绑定到Channel上实现的） 详见：[使用CompletableFuture优化接受服务提供端返回结果](./docs/使用CompletableFuture优化接受服务提供端返回结果.md)
-- [ ] 增加 Netty 心跳机制
+- [x] 增加 Netty 心跳机制
 - [ ] **增加可配置比如序列化方式、注册中心的实现方式,避免硬编码** ：通过API配置，后续集成 Spring 的话建议使用配置文件的方式进行配置
 - [ ] **客户端调用远程服务的时候进行负载均衡** ：发布服务的时候增加 一个 loadbalance 参数即可。
 - [ ] **使用注解进行服务配置和消费**

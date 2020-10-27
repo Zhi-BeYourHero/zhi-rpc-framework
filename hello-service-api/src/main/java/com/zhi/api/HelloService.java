@@ -1,4 +1,4 @@
-package com.zhi;
+package com.zhi.api;
 
 /**
  * @Description 服务类接口，自定义服务接口
