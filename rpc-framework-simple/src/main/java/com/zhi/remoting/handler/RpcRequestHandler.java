@@ -1,5 +1,6 @@
 package com.zhi.remoting.handler;
 
+import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.enumeration.RpcResponseCode;
@@ -21,8 +22,11 @@ import java.lang.reflect.Method;
 @Slf4j
 public class RpcRequestHandler {
     //TODO 使用static初始化资源的好处，为什么Guide老哥一下子用又一下子不用?
-    private static ServiceProvider serviceProvider = new ServiceProviderImpl();
+    private final ServiceProvider serviceProvider;
 
+    public RpcRequestHandler() {
+        serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
+    }
     /**
      * 处理rpcRequest：调用对应的方法，并返回方法执行结果
      */

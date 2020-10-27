@@ -1,7 +1,7 @@
 package com.zhi.config;
 
 import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
-import com.zhi.utils.zk.CuratorUtils;
+import com.zhi.registry.zk.util.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -19,7 +19,7 @@ public class CustomShutdownHook {
     public void clearAll() {
         log.info("addShutdownHook for clearAll");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            CuratorUtils.clearRegistry();
+            CuratorUtils.clearRegistry(CuratorUtils.getZkClient());
             ThreadPoolFactoryUtils.shutDownAllThreadPool();
         }));
     }

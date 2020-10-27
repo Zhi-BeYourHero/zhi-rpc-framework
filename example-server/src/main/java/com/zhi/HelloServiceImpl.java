@@ -16,7 +16,7 @@ public class HelloServiceImpl implements HelloService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloServiceImpl.class);
     static {
-        System.out.println("HelloServiceImpl被初始化");
+        System.out.println("HelloServiceImpl被创建");
     }
     /**
      * 服务接口的具体实现

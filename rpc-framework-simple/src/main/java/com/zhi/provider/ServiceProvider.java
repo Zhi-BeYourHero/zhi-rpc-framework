@@ -19,4 +19,11 @@ public interface ServiceProvider {
      * @return 服务实例对象
      */
     Object getServiceProvider(String serviceName);
+
+    /**
+     * 发布服务
+     *  从NettyServer中移到ServiceProvider中
+     * @param service 服务实例对象
+     */
+    void publishService(Object service);
 }

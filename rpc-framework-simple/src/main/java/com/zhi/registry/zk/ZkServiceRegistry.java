@@ -1,7 +1,9 @@
-package com.zhi.registry;
+package com.zhi.registry.zk;
 
-import com.zhi.utils.zk.CuratorUtils;
+import com.zhi.registry.ServiceRegistry;
+import com.zhi.registry.zk.util.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.framework.CuratorFramework;
 
 import java.net.InetSocketAddress;
 
@@ -17,7 +19,8 @@ public class ZkServiceRegistry implements ServiceRegistry {
         //根节点下注册子节点：服务
         String servicePath = CuratorUtils.ZK_REGISTER_ROOT_PATH + "/" + serviceName + inetSocketAddress.toString();
         //服务子节点下注册子节点：服务地址
-        CuratorUtils.createPersistentNode(servicePath);
+        CuratorFramework zkClient = CuratorUtils.getZkClient();
+        CuratorUtils.createPersistentNode(zkClient, servicePath);
         log.info("节点创建成功，节点为:{}", servicePath);
     }
 }

@@ -1,9 +1,12 @@
-package com.zhi.registry;
+package com.zhi.registry.zk;
 
 import com.zhi.loadbalance.LoadBalance;
 import com.zhi.loadbalance.RandomLoadBalance;
-import com.zhi.utils.zk.CuratorUtils;
+import com.zhi.registry.ServiceDiscovery;
+import com.zhi.registry.zk.util.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.framework.CuratorFramework;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 
@@ -21,7 +24,8 @@ public class ZkServiceDiscovery implements ServiceDiscovery {
     }
     @Override
     public InetSocketAddress lookupService(String serviceName) {
-        List<String> serviceAddressList = CuratorUtils.getChildrenNodes(serviceName);
+        CuratorFramework zkClient = CuratorUtils.getZkClient();
+        List<String> serviceAddressList = CuratorUtils.getChildrenNodes(zkClient, serviceName);
         //通过负载均衡
         String targetServiceURL = loadBalance.selectServiceAddress(serviceAddressList);
         log.info("成功找到服务地址：[{}]", targetServiceURL);

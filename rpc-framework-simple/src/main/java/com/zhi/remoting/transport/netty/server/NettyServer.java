@@ -1,13 +1,8 @@
 package com.zhi.remoting.transport.netty.server;
 
-import com.zhi.annotation.RpcService;
 import com.zhi.config.CustomShutdownHook;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
-import com.zhi.provider.ServiceProvider;
-import com.zhi.provider.ServiceProviderImpl;
-import com.zhi.registry.ServiceRegistry;
-import com.zhi.registry.ZkServiceRegistry;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
 import com.zhi.serialize.kryo.KryoSerializer;
@@ -22,17 +17,11 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
+import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,28 +31,14 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-@PropertySource("classpath:rpc.properties")
-public class NettyServer implements InitializingBean, ApplicationContextAware {
-    @Value("${rpc.server.host}")
-    private String host;
-    @Value("${rpc.server.port}")
-    private int port;
+public class NettyServer implements InitializingBean {
     //TODO 话说为什么这个变量应该是final的？。。。 然后又删了,又加回去了额
     private final KryoSerializer kryoSerializer = new KryoSerializer();;
-    private final ServiceRegistry serviceRegistry = new ZkServiceRegistry();;
-    private final ServiceProvider serviceProvider = new ServiceProviderImpl();;
+    public static final int PORT = 9998;
 
-    /**
-     * 发布服务
-     * @param service
-     * @param serviceClass
-     * @param <T>
-     */
-    public <T> void publishService(Object service, Class<?> serviceClass) {
-        serviceProvider.addServiceProvider(service, serviceClass);
-        serviceRegistry.registerService(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-    }
+    @SneakyThrows
     public void start() {
+        String host = InetAddress.getLocalHost().getHostAddress();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -97,7 +72,7 @@ public class NettyServer implements InitializingBean, ApplicationContextAware {
                         }
                     });
             //绑定端口，同步等待绑定成功
-            ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(host, PORT).sync();
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
@@ -116,12 +91,5 @@ public class NettyServer implements InitializingBean, ApplicationContextAware {
     public void afterPropertiesSet() throws Exception {
         //这个钩子的添加从start()方法末尾改到前面，然后又放到这里...当服务端(provider)关闭时候做一些事情，比如说取消注册所有服务
         CustomShutdownHook.getCustomShutdownHook().clearAll();
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        // 获得所有被 RpcService 注解的类
-        Map<String, Object> registeredBeanMap = applicationContext.getBeansWithAnnotation(RpcService.class);
-        registeredBeanMap.values().forEach(o -> publishService(o, o.getClass().getInterfaces()[0]));
     }
 }

@@ -17,9 +17,9 @@ import java.net.Socket;
  */
 @Slf4j
 public class SocketRpcRequestHandlerRunnable implements Runnable {
-    private Socket socket;
+    private final Socket socket;
     //TODO 修改了RpcRequestHandler和ServiceRegistry的创造方式，不再从方法参数传过来，而是由静态代码块加载,那么问题来了，为什么要这样设置？
-    private RpcRequestHandler rpcRequestHandler;
+    private final RpcRequestHandler rpcRequestHandler;
     public SocketRpcRequestHandlerRunnable(Socket socket) {
         this.socket = socket;
         rpcRequestHandler = SingletonFactory.getInstance(RpcRequestHandler.class);

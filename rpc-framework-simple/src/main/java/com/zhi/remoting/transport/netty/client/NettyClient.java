@@ -27,12 +27,12 @@ import java.util.concurrent.TimeUnit;
  * @Date 2020-10-12 9:03
  */
 @Slf4j
-public final class NettyClient {
+public class NettyClient {
     private static Bootstrap bootstrap;
     private static EventLoopGroup eventLoopGroup;
 
     // 初始化相关资源比如 EventLoopGroup、Bootstrap
-    static {
+    public NettyClient() {
         eventLoopGroup = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
         KryoSerializer kryoSerializer = new KryoSerializer();

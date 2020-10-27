@@ -1,6 +1,6 @@
 package com.zhi.remoting.transport.netty.client;
 
-import com.zhi.enumeration.RpcMessageTypeEnum;
+import com.zhi.enumeration.RpcMessageType;
 import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
@@ -23,8 +23,10 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class NettyClientHandler extends ChannelInboundHandlerAdapter {
     private final UnprocessedRequests unprocessedRequests;
+    private final ChannelProvider channelProvider;
     public NettyClientHandler() {
-        unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+        this.channelProvider = SingletonFactory.getInstance(ChannelProvider.class);
     }
     /**
      * 读取服务端传输的消息
@@ -34,8 +36,10 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
         try {
             //客户端接收到的服务端响应
             log.info("客户端接收到了消息：{}", msg);
-            RpcResponse rpcResponse = (RpcResponse) msg;
-            unprocessedRequests.complete(rpcResponse);
+            if (msg instanceof RpcResponse) {
+                RpcResponse<Object> rpcResponse = (RpcResponse<Object>) msg;
+                unprocessedRequests.complete(rpcResponse);
+            }
         } finally {
             /*
             * 如果指定的消息实现了{@link ReferenceCounted}，尝试调用{@link ReferenceCounted#release()}。
@@ -52,8 +56,8 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
             //如果是写空闲
             if (state == IdleState.WRITER_IDLE) {
                 log.info("write idle happen [{}]", ctx.channel().remoteAddress());
-                Channel channel = ChannelProvider.get((InetSocketAddress) ctx.channel().remoteAddress());
-                RpcRequest rpcRequest = RpcRequest.builder().rpcMessageTypeEnum(RpcMessageTypeEnum.HEART_BEAT).build();
+                Channel channel = channelProvider.get((InetSocketAddress) ctx.channel().remoteAddress());
+                RpcRequest rpcRequest = RpcRequest.builder().rpcMessageType(RpcMessageType.HEART_BEAT).build();
                 channel.writeAndFlush(rpcRequest).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
             }
         } else {

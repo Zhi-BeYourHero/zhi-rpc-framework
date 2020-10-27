@@ -18,7 +18,7 @@ public final class ThreadPoolFactoryUtils {
      * key: threadNamePrefix
      * value: threadPool
      */
-    private static Map<String, ExecutorService> threadPools = new ConcurrentHashMap<>();
+    private static final Map<String, ExecutorService> THREAD_POOLS = new ConcurrentHashMap<>();
     private ThreadPoolFactoryUtils() {
     }
     public static ExecutorService createCustomThreadPoolIfAbsent(String threadNamePrefix) {
@@ -38,12 +38,12 @@ public final class ThreadPoolFactoryUtils {
      * @return
      */
     public static ExecutorService createCustomThreadPoolIfAbsent(CustomThreadPoolConfig customThreadPoolConfig, String threadPoolName, Boolean daemon) {
-        ExecutorService threadPool = threadPools.computeIfAbsent(threadPoolName, k -> createThreadPool(customThreadPoolConfig, threadPoolName, daemon));
+        ExecutorService threadPool = THREAD_POOLS.computeIfAbsent(threadPoolName, k -> createThreadPool(customThreadPoolConfig, threadPoolName, daemon));
         // 如果 threadPool 被 shutdown 的话就重新创建一个
         if (threadPool.isShutdown() || threadPool.isTerminated()) {
-            threadPools.remove(threadPoolName);
+            THREAD_POOLS.remove(threadPoolName);
             threadPool = createThreadPool(customThreadPoolConfig, threadPoolName, daemon);
-            threadPools.put(threadPoolName, threadPool);
+            THREAD_POOLS.put(threadPoolName, threadPool);
         }
         return threadPool;
     }
@@ -54,7 +54,7 @@ public final class ThreadPoolFactoryUtils {
      */
     public static void shutDownAllThreadPool() {
         log.info("call shutDownAllThreadPool method");
-        threadPools.entrySet().parallelStream().forEach(entry -> {
+        THREAD_POOLS.entrySet().parallelStream().forEach(entry -> {
             ExecutorService executorService = entry.getValue();
             //不接收新的，但会执行完旧的任务...
             executorService.shutdown();

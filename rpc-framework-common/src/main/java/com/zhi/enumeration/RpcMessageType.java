@@ -5,6 +5,6 @@ package com.zhi.enumeration;
  * @Author WenZhiLuo
  * @Date 2020-10-19 15:46
  */
-public enum RpcMessageTypeEnum {
+public enum RpcMessageType {
     HEART_BEAT
 }

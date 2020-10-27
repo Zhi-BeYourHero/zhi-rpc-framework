@@ -16,8 +16,8 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor
 public class NettyKryoEncoder extends MessageToByteEncoder<Object> {
-    private Serializer serializer;
-    private Class<?> genericClass;
+    private final Serializer serializer;
+    private final Class<?> genericClass;
 
     /**
      * 将对象转为字节码然后写入到ByteBuf对象中...

@@ -3,7 +3,7 @@ package com.zhi.remoting.transport.socket;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.exception.RpcException;
 import com.zhi.registry.ServiceDiscovery;
-import com.zhi.registry.ZkServiceDiscovery;
+import com.zhi.registry.zk.ZkServiceDiscovery;
 import com.zhi.remoting.transport.ClientTransport;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -4,7 +4,7 @@ import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.registry.ServiceDiscovery;
-import com.zhi.registry.ZkServiceDiscovery;
+import com.zhi.registry.zk.ZkServiceDiscovery;
 import com.zhi.remoting.transport.ClientTransport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -23,16 +23,18 @@ import java.util.concurrent.CompletableFuture;
 public class NettyClientTransport implements ClientTransport {
     private final ServiceDiscovery serviceDiscovery;
     private final UnprocessedRequests unprocessedRequests;
+    private final ChannelProvider channelProvider;
     public NettyClientTransport() {
-        serviceDiscovery = new ZkServiceDiscovery();
-        unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+        this.serviceDiscovery = new ZkServiceDiscovery();
+        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+        this.channelProvider = SingletonFactory.getInstance(ChannelProvider.class);
     }
     @Override
-    public CompletableFuture<RpcResponse> sendRpcRequest(RpcRequest rpcRequest) {
+    public CompletableFuture<RpcResponse<Object>> sendRpcRequest(RpcRequest rpcRequest) {
         //构建返回值
-        CompletableFuture<RpcResponse> resultFuture = new CompletableFuture<>();
+        CompletableFuture<RpcResponse<Object>> resultFuture = new CompletableFuture<>();
         InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
-        Channel channel = ChannelProvider.get(inetSocketAddress);
+        Channel channel = channelProvider.get(inetSocketAddress);
         if (channel != null && channel.isActive()) {
             //放入未处理的请求
             unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);

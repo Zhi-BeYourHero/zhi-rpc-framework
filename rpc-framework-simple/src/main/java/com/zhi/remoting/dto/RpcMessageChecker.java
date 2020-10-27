@@ -1,6 +1,6 @@
 package com.zhi.remoting.dto;
 
-import com.zhi.enumeration.RpcErrorMessageEnum;
+import com.zhi.enumeration.RpcErrorMessage;
 import com.zhi.enumeration.RpcResponseCode;
 import com.zhi.exception.RpcException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +17,13 @@ public final class RpcMessageChecker {
     }
     public static void check(RpcRequest rpcRequest, RpcResponse rpcResponse) {
         if (rpcResponse == null) {
-            throw new RpcException(RpcErrorMessageEnum.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
+            throw new RpcException(RpcErrorMessage.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
         }
         if (!rpcRequest.getRequestId().equals(rpcResponse.getRequestId())) {
-            throw new RpcException(RpcErrorMessageEnum.REQUEST_NOT_MATCH_RESPONSE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
+            throw new RpcException(RpcErrorMessage.REQUEST_NOT_MATCH_RESPONSE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
         }
         if (rpcResponse.getCode() == null || !rpcResponse.getCode().equals(RpcResponseCode.SUCCESS.getCode())) {
-            throw new RpcException(RpcErrorMessageEnum.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
+            throw new RpcException(RpcErrorMessage.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
         }
     }
 }

@@ -1,9 +1,15 @@
 package com.zhi.provider;
 
-import com.zhi.enumeration.RpcErrorMessageEnum;
+import com.zhi.enumeration.RpcErrorMessage;
 import com.zhi.exception.RpcException;
+import com.zhi.registry.ServiceRegistry;
+import com.zhi.registry.zk.ZkServiceRegistry;
+import com.zhi.remoting.transport.netty.server.NettyServer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +32,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     private static final Map<String, Object> SERVICE_MAP = new ConcurrentHashMap<>();
     //这里的是serviceMap的keySet
     private static final Set<String> REGISTERED_SERVICE = ConcurrentHashMap.newKeySet();
-
+    private final ServiceRegistry serviceRegistry = new ZkServiceRegistry();
 
     /**
      * TODO 修改为扫描注解注册
@@ -50,8 +56,20 @@ public class ServiceProviderImpl implements ServiceProvider {
     public Object getServiceProvider(String serviceName) {
         Object service = SERVICE_MAP.get(serviceName);
         if (service == null) {
-            throw new RpcException(RpcErrorMessageEnum.SERVICE_CAN_NOT_BE_FOUND);
+            throw new RpcException(RpcErrorMessage.SERVICE_CAN_NOT_BE_FOUND);
         }
         return service;
+    }
+
+    @Override
+    public void publishService(Object service) {
+        try {
+            String host = InetAddress.getLocalHost().getHostAddress();
+            Class<?> anInterface = service.getClass().getInterfaces()[0];
+            this.addServiceProvider(service, anInterface);
+            serviceRegistry.registerService(anInterface.getCanonicalName(), new InetSocketAddress(host, NettyServer.PORT));
+        } catch (UnknownHostException e) {
+            log.error("occur exception when getHostAddress", e);
+        }
     }
 }

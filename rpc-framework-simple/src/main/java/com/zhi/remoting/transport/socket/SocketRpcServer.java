@@ -4,7 +4,7 @@ import com.zhi.config.CustomShutdownHook;
 import com.zhi.provider.ServiceProvider;
 import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.registry.ServiceRegistry;
-import com.zhi.registry.ZkServiceRegistry;
+import com.zhi.registry.zk.ZkServiceRegistry;
 import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
