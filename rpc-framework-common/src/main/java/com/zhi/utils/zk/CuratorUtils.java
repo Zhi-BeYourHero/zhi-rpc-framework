@@ -22,16 +22,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public final class CuratorUtils {
     private static final int BASE_SLEEP_TIME = 1000;
-    private static final int MAX_RETRIES = 5;
+    //从 5 改成 3 ，布吉岛为啥
+    private static final int MAX_RETRIES = 3;
     private static final String CONNECT_STRING = "127.0.0.1:2181";
     public static final String ZK_REGISTER_ROOT_PATH = "/my-rpc";
-    private static Map<String, List<String>> serviceAddressMap = new ConcurrentHashMap<>();
-    private static Set<String> registeredPathSet = ConcurrentHashMap.newKeySet();
+    private static final Map<String, List<String>> SERVICE_ADDRESS_MAP = new ConcurrentHashMap<>();
+    private static final Set<String> REGISTERED_PATH_SET = ConcurrentHashMap.newKeySet();
     //CuratorFramework还是尽量在CuratorHelper这个使用到了的这个类中进行初始化吧，要不然放在方法参数的话，
     //外部类每次调用这个工具类都要传一次显然是不合理的...
-    private static CuratorFramework zkClient;
+    private static final CuratorFramework ZK_CLIENT;
     static {
-        zkClient = getZkClient();
+        ZK_CLIENT = getZkClient();
     }
     private CuratorUtils() {
     }
@@ -45,14 +46,14 @@ public final class CuratorUtils {
      */
     public static void createPersistentNode(String path) {
         try {
-            if (registeredPathSet.contains(path) || zkClient.checkExists().forPath(path) != null) {
+            if (REGISTERED_PATH_SET.contains(path) || ZK_CLIENT.checkExists().forPath(path) != null) {
                 log.info("节点已经存在，节点为:[{}]", path);
             } else {
                 //eg: /my-rpc/com.zhi.HelloService/127.0.0.1:9999
-                zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path);
+                ZK_CLIENT.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(path);
                 log.info("节点创建成功，节点为:[{}]", path);
             }
-            registeredPathSet.add(path);
+            REGISTERED_PATH_SET.add(path);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,15 +66,15 @@ public final class CuratorUtils {
      * @return 指定字节下的所有子节点
      */
     public static List<String> getChildrenNodes(String serviceName) {
-        if (serviceAddressMap.containsKey(serviceName)) {
-            return serviceAddressMap.get(serviceName);
+        if (SERVICE_ADDRESS_MAP.containsKey(serviceName)) {
+            return SERVICE_ADDRESS_MAP.get(serviceName);
         }
         List<String> result;
         String servicePath = ZK_REGISTER_ROOT_PATH + "/" + serviceName;
         try {
-            result = zkClient.getChildren().forPath(servicePath);
-            serviceAddressMap.put(serviceName, result);
-            registerWatcher(zkClient, serviceName);
+            result = ZK_CLIENT.getChildren().forPath(servicePath);
+            SERVICE_ADDRESS_MAP.put(serviceName, result);
+            registerWatcher(serviceName);
         } catch (Exception e) {
             throw new RpcException(e.getMessage(), e.getCause());
         }
@@ -84,13 +85,13 @@ public final class CuratorUtils {
      * 清除注册中心的数据
      */
     public static void clearRegistry() {
-        registeredPathSet.stream().parallel().forEach(p -> {
+        REGISTERED_PATH_SET.stream().parallel().forEach(p -> {
             try {
-                zkClient.delete().forPath(p);
+                ZK_CLIENT.delete().forPath(p);
             } catch (Exception e) {
                 throw new RpcException(e.getMessage(), e.getCause());
             }
-            log.info("服务端（Provider）所有注册的服务都被清空:[{}]", registeredPathSet.toString());
+            log.info("服务端（Provider）所有注册的服务都被清空:[{}]", REGISTERED_PATH_SET.toString());
         });
     }
     //进行了优化，使用ExponentialBackoffRetry，代替RetryNTimes
@@ -111,12 +112,12 @@ public final class CuratorUtils {
      *
      * @param serviceName 服务对象接口名 eg:com.zhi.HelloService
      */
-    private static void registerWatcher(CuratorFramework zkClient, String serviceName) {
+    private static void registerWatcher(String serviceName) {
         String servicePath = ZK_REGISTER_ROOT_PATH + "/" + serviceName;
-        PathChildrenCache pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
+        PathChildrenCache pathChildrenCache = new PathChildrenCache(ZK_CLIENT, servicePath, true);
         PathChildrenCacheListener pathChildrenCacheListener = (curatorFramework, pathChildrenCacheEvent) -> {
             List<String> serviceAddresses = curatorFramework.getChildren().forPath(servicePath);
-            serviceAddressMap.put(serviceName, serviceAddresses);
+            SERVICE_ADDRESS_MAP.put(serviceName, serviceAddresses);
         };
         pathChildrenCache.getListenable().addListener(pathChildrenCacheListener);
         try {

@@ -1,4 +1,4 @@
-package com.zhi.handler;
+package com.zhi.remoting.handler;
 
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;

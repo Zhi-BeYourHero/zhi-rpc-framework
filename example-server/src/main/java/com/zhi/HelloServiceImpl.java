@@ -1,5 +1,6 @@
 package com.zhi;
 
+import com.zhi.annotation.RpcService;
 import com.zhi.api.Hello;
 import com.zhi.api.HelloService;
 import org.slf4j.Logger;
@@ -10,10 +11,13 @@ import org.slf4j.LoggerFactory;
  * @Author WenZhiLuo
  * @Date 2020-10-10 11:41
  */
+@RpcService
 public class HelloServiceImpl implements HelloService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloServiceImpl.class);
-
+    static {
+        System.out.println("HelloServiceImpl被初始化");
+    }
     /**
      * 服务接口的具体实现
      * @param hello

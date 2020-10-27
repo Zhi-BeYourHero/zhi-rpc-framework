@@ -23,33 +23,32 @@ public class ServiceProviderImpl implements ServiceProvider {
      * value:service
      * v[2.0]从原来的只有final修改为static final
      */
-    private static Map<String, Object> serviceMap = new ConcurrentHashMap<>();
+    private static final Map<String, Object> SERVICE_MAP = new ConcurrentHashMap<>();
     //这里的是serviceMap的keySet
-    private static Set<String> registeredService = ConcurrentHashMap.newKeySet();
+    private static final Set<String> REGISTERED_SERVICE = ConcurrentHashMap.newKeySet();
 
 
     /**
      * TODO 修改为扫描注解注册
      * 将这个对象所有实现的接口都注册进去 -> 注册服务名与服务对象
      * @param service
-     * @param <T>
      */
     @Override
-    public <T> void addServiceProvider(T service, Class<T> serviceClass) {
+    public void addServiceProvider(Object service, Class<?> serviceClass) {
         //Canonical：经典的，权威的
         String serviceName = serviceClass.getCanonicalName();
         log.info("serviceProvider.getClass().getCanonicalName():{}", serviceName);
-        if (registeredService.contains(serviceName)) {
+        if (REGISTERED_SERVICE.contains(serviceName)) {
             return;
         }
-        registeredService.add(serviceName);
-        serviceMap.put(serviceName, service);
+        REGISTERED_SERVICE.add(serviceName);
+        SERVICE_MAP.put(serviceName, service);
         log.info("Add service: {} and interfaces:{}", serviceName, service.getClass().getInterfaces());
     }
 
     @Override
     public Object getServiceProvider(String serviceName) {
-        Object service = serviceMap.get(serviceName);
+        Object service = SERVICE_MAP.get(serviceName);
         if (service == null) {
             throw new RpcException(RpcErrorMessageEnum.SERVICE_CAN_NOT_BE_FOUND);
         }
