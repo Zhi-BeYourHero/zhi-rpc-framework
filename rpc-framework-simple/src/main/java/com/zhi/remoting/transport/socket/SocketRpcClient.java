@@ -1,6 +1,7 @@
 package com.zhi.remoting.transport.socket;
 
 import com.zhi.entity.RpcServiceProperties;
+import com.zhi.extension.ExtensionLoader;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.exception.RpcException;
 import com.zhi.registry.ServiceDiscovery;
@@ -28,7 +29,7 @@ public class SocketRpcClient implements ClientTransport {
     * */
     private final ServiceDiscovery serviceDiscovery;
     public SocketRpcClient() {
-        this.serviceDiscovery = new ZkServiceDiscovery();
+        this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("zk");
     }
     public Object sendRpcRequest(RpcRequest rpcRequest) {
         // build rpc service name by ppcRequest

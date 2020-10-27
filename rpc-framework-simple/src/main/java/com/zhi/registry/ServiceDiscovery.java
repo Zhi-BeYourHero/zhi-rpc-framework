@@ -1,5 +1,7 @@
 package com.zhi.registry;
 
+import com.zhi.extension.SPI;
+
 import java.net.InetSocketAddress;
 
 /**
@@ -7,6 +9,7 @@ import java.net.InetSocketAddress;
  * @Author WenZhiLuo
  * @Date 2020-10-13 15:30
  */
+@SPI
 public interface ServiceDiscovery {
     /**
      * 查找服务

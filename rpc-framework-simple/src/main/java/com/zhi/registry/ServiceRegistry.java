@@ -1,5 +1,6 @@
 package com.zhi.registry;
 
+import com.zhi.extension.SPI;
 import java.net.InetSocketAddress;
 
 /**
@@ -7,6 +8,7 @@ import java.net.InetSocketAddress;
  * @Author WenZhiLuo
  * @Date 2020-10-10 14:20
  */
+@SPI
 public interface ServiceRegistry {
 
     /**

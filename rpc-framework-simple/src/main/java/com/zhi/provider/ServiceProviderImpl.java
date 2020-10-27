@@ -3,6 +3,7 @@ package com.zhi.provider;
 import com.zhi.entity.RpcServiceProperties;
 import com.zhi.enumeration.RpcErrorMessage;
 import com.zhi.exception.RpcException;
+import com.zhi.extension.ExtensionLoader;
 import com.zhi.registry.ServiceRegistry;
 import com.zhi.registry.zk.ZkServiceRegistry;
 import com.zhi.remoting.transport.netty.server.NettyServer;
@@ -37,7 +38,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     public ServiceProviderImpl() {
         serviceMap = new ConcurrentHashMap<>();
         registeredService = ConcurrentHashMap.newKeySet();
-        serviceRegistry = new ZkServiceRegistry();
+        serviceRegistry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("zk");
     }
     /**
      * TODO 修改为扫描注解注册

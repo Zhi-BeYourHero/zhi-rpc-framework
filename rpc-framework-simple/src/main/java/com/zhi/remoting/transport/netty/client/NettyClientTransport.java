@@ -1,6 +1,7 @@
 package com.zhi.remoting.transport.netty.client;
 
 import com.zhi.entity.RpcServiceProperties;
+import com.zhi.extension.ExtensionLoader;
 import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
@@ -26,7 +27,7 @@ public class NettyClientTransport implements ClientTransport {
     private final UnprocessedRequests unprocessedRequests;
     private final ChannelProvider channelProvider;
     public NettyClientTransport() {
-        this.serviceDiscovery = new ZkServiceDiscovery();
+        this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("zk");
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
         this.channelProvider = SingletonFactory.getInstance(ChannelProvider.class);
     }

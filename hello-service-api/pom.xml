@@ -11,5 +11,11 @@
 
     <artifactId>hello-service-api</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.zhi</groupId>
+            <artifactId>rpc-framework-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
