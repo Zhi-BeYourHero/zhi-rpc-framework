@@ -1,6 +1,7 @@
 package com.zhi.remoting.transport.netty.server;
 
 import com.zhi.enumeration.RpcMessageType;
+import com.zhi.enumeration.RpcResponseCode;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.handler.RpcRequestHandler;
@@ -51,6 +52,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                      */
                     ctx.writeAndFlush(rpcResponse).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                 } else {
+                    RpcResponse<Object> rpcResponse = RpcResponse.fail(RpcResponseCode.FAIL);
+                    ctx.writeAndFlush(rpcResponse).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                     log.error("not writable now, message dropped");
                 }
             } finally {

@@ -12,8 +12,8 @@ public interface ServiceRegistry {
     /**
      * 注册服务
      *
-     * @param serviceName       服务名称
+     * @param rpcServiceName       服务名称
      * @param inetSocketAddress 提供服务的地址
      */
-    void registerService(String serviceName, InetSocketAddress inetSocketAddress);
+    void registerService(String rpcServiceName, InetSocketAddress inetSocketAddress);
 }

@@ -3,7 +3,7 @@ package com.zhi.loadbalance;
 import java.util.List;
 
 /**
- * @Description
+ * @Description Abstract class for a load balancing policy
  * @Author WenZhiLuo
  * @Date 2020-10-27 12:10
  */

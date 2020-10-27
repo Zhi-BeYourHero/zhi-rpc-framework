@@ -25,8 +25,8 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     /**
      * 接口名和服务的对应关系，TODO 处理一个接口被两个实现类实现的情况（通过 group 分组）
-     * key:service/interface name
-     * value:service
+     * key: rpc service name(interface name + version + group)
+     * value: service object
      * v[2.0]从原来的只有final修改为static final,然后又改成只有final，且通过无参构造方法进行初始化
      */
     private final Map<String, Object> serviceMap;
@@ -45,7 +45,7 @@ public class ServiceProviderImpl implements ServiceProvider {
      * @param service
      */
     @Override
-    public void addServiceProvider(Object service, Class<?> serviceClass, RpcServiceProperties rpcServiceProperties) {
+    public void addService(Object service, Class<?> serviceClass, RpcServiceProperties rpcServiceProperties) {
         //Canonical：经典的，权威的
         String rpcServiceName = rpcServiceProperties.getServiceName();
         log.info("serviceProvider.getClass().getCanonicalName():{}", rpcServiceName);
@@ -58,7 +58,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     }
 
     @Override
-    public Object getServiceProvider(RpcServiceProperties rpcServiceProperties) {
+    public Object getService(RpcServiceProperties rpcServiceProperties) {
         Object service = serviceMap.get(rpcServiceProperties.getServiceName());
         if (service == null) {
             throw new RpcException(RpcErrorMessage.SERVICE_CAN_NOT_BE_FOUND);
@@ -79,7 +79,7 @@ public class ServiceProviderImpl implements ServiceProvider {
             Class<?> serviceRelatedInterface = service.getClass().getInterfaces()[0];
             String serviceName = serviceRelatedInterface.getCanonicalName();
             rpcServiceProperties.setServiceName(serviceName);
-            this.addServiceProvider(service, serviceRelatedInterface, rpcServiceProperties);
+            this.addService(service, serviceRelatedInterface, rpcServiceProperties);
             serviceRegistry.registerService(rpcServiceProperties.toRpcServiceName(), new InetSocketAddress(host, NettyServer.PORT));
         } catch (UnknownHostException e) {
             log.error("occur exception when getHostAddress", e);

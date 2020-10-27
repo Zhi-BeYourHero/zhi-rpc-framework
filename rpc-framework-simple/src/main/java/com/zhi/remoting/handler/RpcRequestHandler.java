@@ -36,7 +36,7 @@ public class RpcRequestHandler {
                 .group(rpcRequest.getGroup()).version(rpcRequest.getVersion())
                 .serviceName(rpcRequest.getInterfaceName()).build();
         //通过注册中心获取到目标类（客户端需要调用类）
-        Object service = serviceProvider.getServiceProvider(rpcServiceProperties);
+        Object service = serviceProvider.getService(rpcServiceProperties);
         return invokeTargetMethod(rpcRequest, service);
     }
 

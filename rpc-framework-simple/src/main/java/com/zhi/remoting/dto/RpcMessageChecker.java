@@ -15,7 +15,7 @@ public final class RpcMessageChecker {
     private static final String INTERFACE_NAME = "interfaceName";
     private RpcMessageChecker() {
     }
-    public static void check(RpcRequest rpcRequest, RpcResponse rpcResponse) {
+    public static void check(RpcRequest rpcRequest, RpcResponse<Object> rpcResponse) {
         if (rpcResponse == null) {
             throw new RpcException(RpcErrorMessage.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
         }

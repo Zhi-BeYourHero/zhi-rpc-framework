@@ -1,6 +1,6 @@
 package com.zhi.registry.zk.util;
 
-import com.zhi.enumeration.RpcProperties;
+import com.zhi.enumeration.RpcConfigProperties;
 import com.zhi.exception.RpcException;
 import com.zhi.utils.file.PropertiesFileUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -28,13 +28,13 @@ public final class CuratorUtils {
     private static final int BASE_SLEEP_TIME = 1000;
     //从 5 改成 3 ，布吉岛为啥
     private static final int MAX_RETRIES = 3;
-    private static String defaultZookeeperAddress = "127.0.0.1:2181";
     public static final String ZK_REGISTER_ROOT_PATH = "/my-rpc";
     private static final Map<String, List<String>> SERVICE_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final Set<String> REGISTERED_PATH_SET = ConcurrentHashMap.newKeySet();
     //CuratorFramework还是尽量在CuratorHelper这个使用到了的这个类中进行初始化吧，要不然放在方法参数的话，
     //外部类每次调用这个工具类都要传一次显然是不合理的...  ->  从该类的static代码块new对象到通过单例工厂
     private static CuratorFramework zkClient;
+    private static String defaultZookeeperAddress = "127.0.0.1:2181";
 
     private CuratorUtils() {
     }
@@ -64,19 +64,19 @@ public final class CuratorUtils {
     /**
      * 获取某个字节下的子节点，也就是获取所有提供服务的生产者的地址
      * v[3.0]进行了优化，result不用一定要指定为null，后面如果报错直接throw exception
-     * @param serviceName 服务对象接口名 eg:com.zhi.HelloService
+     * @param rpcServiceName 服务对象接口名 eg:com.zhi.HelloService
      * @return 指定字节下的所有子节点
      */
-    public static List<String> getChildrenNodes(CuratorFramework zkClient, String serviceName) {
-        if (SERVICE_ADDRESS_MAP.containsKey(serviceName)) {
-            return SERVICE_ADDRESS_MAP.get(serviceName);
+    public static List<String> getChildrenNodes(CuratorFramework zkClient, String rpcServiceName) {
+        if (SERVICE_ADDRESS_MAP.containsKey(rpcServiceName)) {
+            return SERVICE_ADDRESS_MAP.get(rpcServiceName);
         }
         List<String> result;
-        String servicePath = ZK_REGISTER_ROOT_PATH + "/" + serviceName;
+        String servicePath = ZK_REGISTER_ROOT_PATH + "/" + rpcServiceName;
         try {
             result = zkClient.getChildren().forPath(servicePath);
-            SERVICE_ADDRESS_MAP.put(serviceName, result);
-            registerWatcher(serviceName, zkClient);
+            SERVICE_ADDRESS_MAP.put(rpcServiceName, result);
+            registerWatcher(rpcServiceName, zkClient);
         } catch (Exception e) {
             throw new RpcException(e.getMessage(), e.getCause());
         }
@@ -98,9 +98,9 @@ public final class CuratorUtils {
     }
     //进行了优化，使用ExponentialBackoffRetry，代替RetryNTimes
     public static CuratorFramework getZkClient() {
-        Properties properties = PropertiesFileUtils.readPropertiesFile(RpcProperties.RPC_CONFIG_PATH.getPropertyValue());
+        Properties properties = PropertiesFileUtils.readPropertiesFile(RpcConfigProperties.RPC_CONFIG_PATH.getPropertyValue());
         if (properties != null) {
-            defaultZookeeperAddress = properties.getProperty(RpcProperties.ZK_ADDRESS.getPropertyValue());
+            defaultZookeeperAddress = properties.getProperty(RpcConfigProperties.ZK_ADDRESS.getPropertyValue());
         }
         if (zkClient != null && zkClient.getState() == CuratorFrameworkState.STARTED) {
             return zkClient;
@@ -119,14 +119,14 @@ public final class CuratorUtils {
     /**
      * 注册监听指定节点
      *
-     * @param serviceName 服务对象接口名 eg:com.zhi.HelloService
+     * @param rpcServiceName 服务对象接口名 eg:com.zhi.HelloService
      */
-    private static void registerWatcher(String serviceName, CuratorFramework zkClient) {
-        String servicePath = ZK_REGISTER_ROOT_PATH + "/" + serviceName;
+    private static void registerWatcher(String rpcServiceName, CuratorFramework zkClient) {
+        String servicePath = ZK_REGISTER_ROOT_PATH + "/" + rpcServiceName;
         PathChildrenCache pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
         PathChildrenCacheListener pathChildrenCacheListener = (curatorFramework, pathChildrenCacheEvent) -> {
             List<String> serviceAddresses = curatorFramework.getChildren().forPath(servicePath);
-            SERVICE_ADDRESS_MAP.put(serviceName, serviceAddresses);
+            SERVICE_ADDRESS_MAP.put(rpcServiceName, serviceAddresses);
         };
         pathChildrenCache.getListenable().addListener(pathChildrenCacheListener);
         try {

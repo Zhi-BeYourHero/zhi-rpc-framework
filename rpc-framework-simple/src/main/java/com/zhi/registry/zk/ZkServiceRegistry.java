@@ -15,9 +15,9 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class ZkServiceRegistry implements ServiceRegistry {
     @Override
-    public void registerService(String serviceName, InetSocketAddress inetSocketAddress) {
+    public void registerService(String rpcServiceName, InetSocketAddress inetSocketAddress) {
         //根节点下注册子节点：服务
-        String servicePath = CuratorUtils.ZK_REGISTER_ROOT_PATH + "/" + serviceName + inetSocketAddress.toString();
+        String servicePath = CuratorUtils.ZK_REGISTER_ROOT_PATH + "/" + rpcServiceName + inetSocketAddress.toString();
         //服务子节点下注册子节点：服务地址
         CuratorFramework zkClient = CuratorUtils.getZkClient();
         CuratorUtils.createPersistentNode(zkClient, servicePath);

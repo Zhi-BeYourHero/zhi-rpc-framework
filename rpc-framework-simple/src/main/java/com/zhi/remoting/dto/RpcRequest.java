@@ -1,5 +1,6 @@
 package com.zhi.remoting.dto;
 
+import com.zhi.entity.RpcServiceProperties;
 import com.zhi.enumeration.RpcMessageType;
 import lombok.*;
 
@@ -26,4 +27,9 @@ public class RpcRequest implements Serializable {
     private RpcMessageType rpcMessageType;
     private String version;
     private String group;
+    public RpcServiceProperties toRpcProperties() {
+        return RpcServiceProperties.builder().serviceName(this.getInterfaceName())
+                .version(this.getVersion())
+                .group(this.getGroup()).build();
+    }
 }
