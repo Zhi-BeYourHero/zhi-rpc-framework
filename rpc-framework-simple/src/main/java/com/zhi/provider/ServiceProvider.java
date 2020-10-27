@@ -1,5 +1,7 @@
 package com.zhi.provider;
 
+import com.zhi.entity.RpcServiceProperties;
+
 /**
  * @Description 保存和提供服务实例对象，服务端使用
  * @Author WenZhiLuo
@@ -11,14 +13,14 @@ public interface ServiceProvider {
      * @param service      服务实例对象
      * @param serviceClass 服务实例对象实现的接口类
      */
-    void addServiceProvider(Object service, Class<?> serviceClass);
+    void addServiceProvider(Object service, Class<?> serviceClass, RpcServiceProperties rpcServiceProperties);
 
     /**
      * 获取服务实例对象
-     * @param serviceName 服务实例对象实现的接口类的类名
+     * @param rpcServiceProperties service related attributes
      * @return 服务实例对象
      */
-    Object getServiceProvider(String serviceName);
+    Object getServiceProvider(RpcServiceProperties rpcServiceProperties);
 
     /**
      * 发布服务
@@ -26,4 +28,10 @@ public interface ServiceProvider {
      * @param service 服务实例对象
      */
     void publishService(Object service);
+
+    /**
+     * @param service              service object
+     * @param rpcServiceProperties service related attributes
+     */
+    void publishService(Object service, RpcServiceProperties rpcServiceProperties);
 }

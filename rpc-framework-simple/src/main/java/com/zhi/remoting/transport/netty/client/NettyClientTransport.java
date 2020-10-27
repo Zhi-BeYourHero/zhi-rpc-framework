@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport.netty.client;
 
+import com.zhi.entity.RpcServiceProperties;
 import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
@@ -31,9 +32,11 @@ public class NettyClientTransport implements ClientTransport {
     }
     @Override
     public CompletableFuture<RpcResponse<Object>> sendRpcRequest(RpcRequest rpcRequest) {
+        String rpcServiceName = RpcServiceProperties.builder().group(rpcRequest.getGroup())
+                .version(rpcRequest.getVersion()).serviceName(rpcRequest.getInterfaceName()).build().toRpcServiceName();
         //构建返回值
         CompletableFuture<RpcResponse<Object>> resultFuture = new CompletableFuture<>();
-        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcServiceName);
         Channel channel = channelProvider.get(inetSocketAddress);
         if (channel != null && channel.isActive()) {
             //放入未处理的请求

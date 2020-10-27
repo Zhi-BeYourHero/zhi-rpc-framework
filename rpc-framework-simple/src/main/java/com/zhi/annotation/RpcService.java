@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.lang.annotation.*;
 
 /**
- * @Description
+ * @Description Rpc service annotation, marked on service implements class
  * @Author WenZhiLuo
  * @Date 2020-10-27 12:33
  */

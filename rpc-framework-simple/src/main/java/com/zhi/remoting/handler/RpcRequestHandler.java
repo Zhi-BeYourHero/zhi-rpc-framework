@@ -1,5 +1,6 @@
 package com.zhi.remoting.handler;
 
+import com.zhi.entity.RpcServiceProperties;
 import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
@@ -31,9 +32,11 @@ public class RpcRequestHandler {
      * 处理rpcRequest：调用对应的方法，并返回方法执行结果
      */
     public Object handle(RpcRequest rpcRequest) {
-        Object result;
+        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder()
+                .group(rpcRequest.getGroup()).version(rpcRequest.getVersion())
+                .serviceName(rpcRequest.getInterfaceName()).build();
         //通过注册中心获取到目标类（客户端需要调用类）
-        Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
+        Object service = serviceProvider.getServiceProvider(rpcServiceProperties);
         return invokeTargetMethod(rpcRequest, service);
     }
 
@@ -47,9 +50,6 @@ public class RpcRequestHandler {
         Object result;
         try {
             Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
-            if (null == method) {
-                return RpcResponse.fail(RpcResponseCode.NOT_FOUND_METHOD);
-            }
             result = method.invoke(service, rpcRequest.getParameters());
             log.info("service:[{}] successful invoke method:[{}]", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
         } catch (NoSuchMethodException | IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {

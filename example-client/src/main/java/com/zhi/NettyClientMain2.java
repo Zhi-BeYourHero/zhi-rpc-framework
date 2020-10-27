@@ -3,8 +3,8 @@ package com.zhi;
 import com.zhi.api.Hello;
 import com.zhi.api.HelloService;
 import com.zhi.entity.RpcServiceProperties;
-import com.zhi.remoting.transport.ClientTransport;
 import com.zhi.proxy.RpcClientProxy;
+import com.zhi.remoting.transport.ClientTransport;
 import com.zhi.remoting.transport.netty.client.NettyClientTransport;
 
 /**
@@ -12,13 +12,13 @@ import com.zhi.remoting.transport.netty.client.NettyClientTransport;
  * @Author WenZhiLuo
  * @Date 2020-10-11 15:50
  */
-public class NettyClientMain {
+public class NettyClientMain2 {
     public static void main(String[] args) throws InterruptedException {
         //1. 获取客户端类,其成员变量主要由host和port, 和一个sendRpcRequest方法,后面由代理类来代理
         //由客户端指定host和port转为服务端指定，客户端获取service
         ClientTransport clientTransport = new NettyClientTransport();
-        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder().group("test1")
-                .version("version1").build();
+        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder().group("test2")
+                .version("version2").build();
         //2. 生成客户端代理类
         RpcClientProxy rpcClientProxy = new RpcClientProxy(clientTransport, rpcServiceProperties);
         //3. 根据客户端代理类获取我们需要的代理对象,这样代理方法就能生效

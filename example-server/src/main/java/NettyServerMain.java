@@ -3,7 +3,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * @Description
+ * @Description  Server: Automatic registration service via @RpcService annotation
  * @Author WenZhiLuo
  * @Date 2020-10-11 15:32
  */

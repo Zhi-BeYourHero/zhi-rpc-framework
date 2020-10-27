@@ -1,5 +1,6 @@
 package com.zhi.proxy;
 
+import com.zhi.entity.RpcServiceProperties;
 import com.zhi.remoting.dto.RpcMessageChecker;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
@@ -27,8 +28,21 @@ public class RpcClientProxy implements InvocationHandler {
      * 用于发送请求给服务端，对应socket和netty两种实现方式
      */
     private final ClientTransport clientTransport;
+    private final RpcServiceProperties rpcServiceProperties;
     public RpcClientProxy(ClientTransport clientTransport) {
         this.clientTransport = clientTransport;
+        rpcServiceProperties = RpcServiceProperties.builder().group("").version("").build();
+    }
+
+    public RpcClientProxy(ClientTransport clientTransport, RpcServiceProperties rpcServiceProperties) {
+        this.clientTransport = clientTransport;
+        if (rpcServiceProperties.getGroup() == null) {
+            rpcServiceProperties.setGroup("");
+        }
+        if (rpcServiceProperties.getVersion() == null) {
+            rpcServiceProperties.setVersion("");
+        }
+        this.rpcServiceProperties = rpcServiceProperties;
     }
 
     /**
@@ -46,6 +60,7 @@ public class RpcClientProxy implements InvocationHandler {
      * java.lang.reflect.Method.getDeclaringClass()方法返回表示声明由此Method对象表示的方法的类的Class对象。
      */
     @SneakyThrows
+    @SuppressWarnings("unchecked")
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
         log.info("invoked method: [{}]", method.getName());
@@ -54,14 +69,16 @@ public class RpcClientProxy implements InvocationHandler {
                 .parameters(args)
                 .paramTypes(method.getParameterTypes())
                 .requestId(UUID.randomUUID().toString())
+                .group(rpcServiceProperties.getGroup())
+                .version(rpcServiceProperties.getVersion())
                 .build();
-        RpcResponse rpcResponse = null;
+        RpcResponse<Object> rpcResponse = null;
         if (clientTransport instanceof NettyClientTransport) {
-            CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) clientTransport.sendRpcRequest(rpcRequest);
+            CompletableFuture<RpcResponse<Object>> completableFuture = (CompletableFuture<RpcResponse<Object>>) clientTransport.sendRpcRequest(rpcRequest);
             rpcResponse = completableFuture.get();
         }
         if (clientTransport instanceof SocketRpcClient) {
-            rpcResponse = (RpcResponse) clientTransport.sendRpcRequest(rpcRequest);
+            rpcResponse = (RpcResponse<Object>) clientTransport.sendRpcRequest(rpcRequest);
         }
         //校验 RpcRequest 和 RpcResponse
         RpcMessageChecker.check(rpcRequest, rpcResponse);

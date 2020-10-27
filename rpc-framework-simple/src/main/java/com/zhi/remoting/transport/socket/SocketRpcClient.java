@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport.socket;
 
+import com.zhi.entity.RpcServiceProperties;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.exception.RpcException;
 import com.zhi.registry.ServiceDiscovery;
@@ -30,7 +31,10 @@ public class SocketRpcClient implements ClientTransport {
         this.serviceDiscovery = new ZkServiceDiscovery();
     }
     public Object sendRpcRequest(RpcRequest rpcRequest) {
-        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
+        // build rpc service name by ppcRequest
+        String rpcServiceName = RpcServiceProperties.builder().serviceName(rpcRequest.getInterfaceName())
+                .group(rpcRequest.getGroup()).version(rpcRequest.getVersion()).build().toRpcServiceName();
+        InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcServiceName);
         //1. 创建Socket对象并且指定服务器的地址和端口号
         try (Socket socket = new Socket()) {
             socket.connect(inetSocketAddress);

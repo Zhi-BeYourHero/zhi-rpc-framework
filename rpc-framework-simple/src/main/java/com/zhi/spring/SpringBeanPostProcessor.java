@@ -1,6 +1,7 @@
-package com.zhi.remoting.transport.netty.server;
+package com.zhi.spring;
 
 import com.zhi.annotation.RpcService;
+import com.zhi.entity.RpcServiceProperties;
 import com.zhi.factory.SingletonFactory;
 import com.zhi.provider.ServiceProvider;
 import com.zhi.provider.ServiceProviderImpl;
@@ -27,7 +28,12 @@ public class SpringBeanPostProcessor implements BeanPostProcessor {
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (bean.getClass().isAnnotationPresent(RpcService.class)) {
             log.info("[{}] is annotated with  [{}]", bean.getClass().getName(), RpcService.class.getCanonicalName());
-            serviceProvider.publishService(bean);
+            //get RpcService annotation
+            RpcService rpcService = bean.getClass().getAnnotation(RpcService.class);
+            //build RpcServiceProperties
+            RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder().group(rpcService.group())
+                    .version(rpcService.version()).build();
+            serviceProvider.publishService(bean, rpcServiceProperties);
         }
         return bean;
     }
