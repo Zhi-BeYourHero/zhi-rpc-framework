@@ -1,6 +1,6 @@
 package com.zhi.remoting.dto;
 
-import com.zhi.enumeration.RpcResponseCode;
+import com.zhi.enums.RpcResponseCodeEnum;
 import lombok.*;
 
 import java.io.Serializable;
@@ -33,16 +33,16 @@ public class RpcResponse<T> implements Serializable {
     private T data;
     public static <T> RpcResponse<T> success(T data, String requestId) {
         RpcResponse<T> response = new RpcResponse<>();
-        response.setCode(RpcResponseCode.SUCCESS.getCode());
+        response.setCode(RpcResponseCodeEnum.SUCCESS.getCode());
         response.setRequestId(requestId);
-        response.setMessage(RpcResponseCode.SUCCESS.getMessage());
+        response.setMessage(RpcResponseCodeEnum.SUCCESS.getMessage());
         if (data != null) {
             response.setData(data);
         }
         return response;
     }
 
-    public static <T> RpcResponse<T> fail(RpcResponseCode rpcResponseCode) {
+    public static <T> RpcResponse<T> fail(RpcResponseCodeEnum rpcResponseCode) {
         RpcResponse<T> response = new RpcResponse<>();
         response.setCode(rpcResponseCode.getCode());
         response.setMessage(rpcResponseCode.getMessage());

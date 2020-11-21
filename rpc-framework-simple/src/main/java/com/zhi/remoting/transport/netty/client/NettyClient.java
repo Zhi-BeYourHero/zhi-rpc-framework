@@ -1,11 +1,7 @@
 package com.zhi.remoting.transport.netty.client;
 
-import com.zhi.extension.ExtensionLoader;
-import com.zhi.remoting.dto.RpcRequest;
-import com.zhi.remoting.dto.RpcResponse;
-import com.zhi.remoting.transport.netty.codec.DefaultDecoder;
-import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
-import com.zhi.serialize.Serializer;
+import com.zhi.remoting.transport.netty.codec.RpcMessageDecoder;
+import com.zhi.remoting.transport.netty.codec.RpcMessageEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -36,7 +32,6 @@ public class NettyClient {
     public NettyClient() {
         eventLoopGroup = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
-        Serializer kryoSerializer = ExtensionLoader.getExtensionLoader(Serializer.class).getExtension("kryo");
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
@@ -45,6 +40,7 @@ public class NettyClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
+                        ChannelPipeline p = ch.pipeline();
                         //如果 15 秒之内没有发送数据给服务端的话，就发送一次心跳请求
                         /**
                          * @param readerIdleTime
@@ -54,10 +50,8 @@ public class NettyClient {
                          **/
                         ch.pipeline().addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                         /*自定义序列化编解码器*/
-                        // RpcResponse -> ByteBuf
-                        ch.pipeline().addLast(new DefaultDecoder(RpcResponse.class));
-                        // ByteBuf -> RpcRequest
-                        ch.pipeline().addLast(new NettyKryoEncoder(kryoSerializer, RpcRequest.class));
+                        p.addLast(new RpcMessageEncoder());
+                        p.addLast(new RpcMessageDecoder());
                         ch.pipeline().addLast(new NettyClientHandler());
                     }
                 });

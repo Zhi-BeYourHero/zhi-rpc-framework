@@ -1,7 +1,9 @@
 package com.zhi.proxy;
 
 import com.zhi.entity.RpcServiceProperties;
-import com.zhi.remoting.dto.RpcMessageChecker;
+import com.zhi.enums.RpcErrorMessageEnum;
+import com.zhi.enums.RpcResponseCodeEnum;
+import com.zhi.exception.RpcException;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.transport.ClientTransport;
@@ -24,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 public class RpcClientProxy implements InvocationHandler {
+    private static final String INTERFACE_NAME = "interfaceName";
     /**
      * 用于发送请求给服务端，对应socket和netty两种实现方式
      */
@@ -82,7 +85,26 @@ public class RpcClientProxy implements InvocationHandler {
             rpcResponse = (RpcResponse<Object>) clientTransport.sendRpcRequest(rpcRequest);
         }
         //校验 RpcRequest 和 RpcResponse
-        RpcMessageChecker.check(rpcRequest, rpcResponse);
+        this.check(rpcResponse, rpcRequest);
         return rpcResponse.getData();
+    }
+
+    /**
+     * 本来是创建了个对象来进行校验的，现在看来确实是没有必要，多个对象的开销是多余的...
+     * @param rpcResponse
+     * @param rpcRequest
+     */
+    private void check(RpcResponse<Object> rpcResponse, RpcRequest rpcRequest) {
+        if (rpcResponse == null) {
+            throw new RpcException(RpcErrorMessageEnum.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
+        }
+
+        if (!rpcRequest.getRequestId().equals(rpcResponse.getRequestId())) {
+            throw new RpcException(RpcErrorMessageEnum.REQUEST_NOT_MATCH_RESPONSE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
+        }
+
+        if (rpcResponse.getCode() == null || !rpcResponse.getCode().equals(RpcResponseCodeEnum.SUCCESS.getCode())) {
+            throw new RpcException(RpcErrorMessageEnum.SERVICE_INVOCATION_FAILURE, INTERFACE_NAME + ":" + rpcRequest.getInterfaceName());
+        }
     }
 }

@@ -14,7 +14,7 @@ import com.zhi.serviceimpl.HelloServiceImpl;
 public class RpcFrameworkSimpleServerMain {
     public static void main(String[] args) {
         HelloService helloService = new HelloServiceImpl();
-        SocketRpcServer socketRpcServer = new SocketRpcServer("127.0.0.1", 9999);
+        SocketRpcServer socketRpcServer = new SocketRpcServer("127.0.0.1", 9998);
         socketRpcServer.start();
         ServiceProvider serviceProvider = new ServiceProviderImpl();
         serviceProvider.publishService(helloService);

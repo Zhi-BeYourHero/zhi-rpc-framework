@@ -2,20 +2,13 @@ package com.zhi.remoting.transport.netty.server;
 
 import com.zhi.config.CustomShutdownHook;
 import com.zhi.entity.RpcServiceProperties;
-import com.zhi.extension.ExtensionLoader;
 import com.zhi.factory.SingletonFactory;
 import com.zhi.provider.ServiceProvider;
 import com.zhi.provider.ServiceProviderImpl;
-import com.zhi.remoting.dto.RpcRequest;
-import com.zhi.remoting.dto.RpcResponse;
-import com.zhi.remoting.transport.netty.codec.DefaultDecoder;
-import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
-import com.zhi.serialize.Serializer;
+import com.zhi.remoting.transport.netty.codec.RpcMessageDecoder;
+import com.zhi.remoting.transport.netty.codec.RpcMessageEncoder;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -37,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class NettyServer {
     //TODO 话说为什么这个变量应该是final的？。。。 然后又删了,又加回去了额
-    private final Serializer kryoSerializer = ExtensionLoader.getExtensionLoader(Serializer.class).getExtension("kryo");
     public static final int PORT = 9998;
     private final ServiceProvider serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
 
@@ -76,11 +68,12 @@ public class NettyServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
+                            ChannelPipeline p = ch.pipeline();
                             // 30 秒之内没有收到客户端请求的话就关闭连接
-                            ch.pipeline().addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
+                            p.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
                             //添加一些处理器
-                            ch.pipeline().addLast(new DefaultDecoder(RpcRequest.class));
-                            ch.pipeline().addLast(new NettyKryoEncoder(kryoSerializer, RpcResponse.class));
+                            ch.pipeline().addLast(new RpcMessageDecoder());
+                            ch.pipeline().addLast(new RpcMessageEncoder());
                             ch.pipeline().addLast(new NettyServerHandler());
                         }
                     });

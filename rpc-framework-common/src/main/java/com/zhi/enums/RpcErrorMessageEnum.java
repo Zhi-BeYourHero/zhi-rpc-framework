@@ -1,4 +1,4 @@
-package com.zhi.enumeration;
+package com.zhi.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 @ToString
-public enum RpcErrorMessage {
+public enum RpcErrorMessageEnum {
     CLIENT_CONNECT_SERVER_FAILURE("客户端连接服务端失败"),
     SERVICE_INVOCATION_FAILURE("服务调用失败"),
     SERVICE_CAN_NOT_BE_FOUND("没有找到指定的服务"),

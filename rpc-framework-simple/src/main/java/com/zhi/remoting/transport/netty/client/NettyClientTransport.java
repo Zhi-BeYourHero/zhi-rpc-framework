@@ -1,12 +1,13 @@
 package com.zhi.remoting.transport.netty.client;
 
-import com.zhi.entity.RpcServiceProperties;
+import com.zhi.enums.SerializableTypeEnum;
 import com.zhi.extension.ExtensionLoader;
 import com.zhi.factory.SingletonFactory;
+import com.zhi.remoting.constants.RpcConstants;
+import com.zhi.remoting.dto.RpcMessage;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.registry.ServiceDiscovery;
-import com.zhi.registry.zk.ZkServiceDiscovery;
 import com.zhi.remoting.transport.ClientTransport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -41,9 +42,13 @@ public class NettyClientTransport implements ClientTransport {
         if (channel != null && channel.isActive()) {
             //放入未处理的请求
             unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);
-            channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future -> {
+            RpcMessage rpcMessage = new RpcMessage();
+            rpcMessage.setData(rpcRequest);
+            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
+            rpcMessage.setMessageType(RpcConstants.REQUEST_TYPE);
+            channel.writeAndFlush(rpcMessage).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
-                    log.info("客户端向服务端发送消息: [{}]", rpcRequest);
+                    log.info("客户端向服务端发送消息: [{}]", rpcMessage);
                 } else {
                     future.channel().close();
                     resultFuture.completeExceptionally(future.cause());

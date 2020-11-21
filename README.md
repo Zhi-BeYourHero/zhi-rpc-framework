@@ -1,20 +1,10 @@
 # zhi-rpc-framework
 
-1. [Netty 从入门到实战](https://github.com/Snailclimb/netty-practical-tutorial)(正在更新中...)
-
-## 前言
-
-虽说 RPC 的原理实际不难，但是，自己在实现的过程中自己也遇到了很多问题。[guide-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 目前只实现了 RPC 框架最基本的功能，一些可优化点都在下面提到了，有兴趣的小伙伴可以自行完善。
-
-通过这个简易的轮子，你可以学到 RPC 的底层原理和原理以及各种 Java 编码实践的运用。
-
-你甚至可以把 [guide-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 当做你的毕设/项目经验的选择，这是非常不错！对比其他求职者的项目经验都是各种系统，造轮子肯定是更加能赢得面试官的青睐。
-
-如果你要将 [guide-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 当做你的毕设/项目经验的话，我希望你一定要搞懂，而不是直接复制粘贴我的思想。你可以 fork 我的项目，然后进行优化。如果你觉得的优化是有价值的话，你可以提交 PR 给我，我会尽快处理。
+该项目借鉴[Guide-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework)
 
 ## 介绍
 
-[guide-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 是一款基于 Netty+Kyro+Zookeeper 实现的 RPC 框架。代码注释详细，结构清晰，并且集成了 Check Style 规范代码结构，非常适合阅读和学习。
+[zhi-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 是一款基于 Netty+Kyro+Zookeeper 实现的 RPC 框架。代码注释详细，结构清晰，并且集成了 Check Style 规范代码结构，非常适合阅读和学习。
 
 **我们先从一个基本的 RPC 框架设计思路说起！**
 
@@ -22,7 +12,7 @@
 
 > **注意** ：我们这里说的 RPC 框架指的是：可以让客户端直接调用服务端方法就像调用本地方法一样简单的框架，比如我前面介绍的 Dubbo、Motan、gRPC 这些。 如果需要和 HTTP 协议打交道，解析和封装 HTTP 请求和响应。这类框架并不能算是“RPC 框架”，比如 Feign。
 
-一个最简单的 RPC 框架使用示意图如下图所示,这也是 [guide-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 目前的架构 ：
+一个最简单的 RPC 框架使用示意图如下图所示,这也是 [zhi-rpc-framework](https://github.com/Snailclimb/guide-rpc-framework) 目前的架构 ：
 
 ![](./images/rpc-architure.png)
 
@@ -64,63 +54,17 @@
 - [x] **对 SPI 机制的运用** 
 - [ ] **增加可配置比如序列化方式、注册中心的实现方式,避免硬编码** ：通过 API 配置，后续集成 Spring 的话建议使用配置文件的方式进行配置
 - [ ] **使用注解进行服务消费**
-- [ ] **客户端与服务端通信协议（数据包结构）重新设计** ，可以将原有的 `RpcRequest`和 `RpcReuqest` 对象作为消息体，然后增加如下字段（可以参考：《Netty 入门实战小册》和 Dubbo 框架对这块的设计）：
+- [x] **客户端与服务端通信协议（数据包结构）重新设计** ，可以将原有的 `RpcRequest`和 `RpcReuqest` 对象作为消息体，然后增加如下字段（可以参考：《Netty 入门实战小册》和 Dubbo 框架对这块的设计）：
   - **魔数** ： 通常是 4 个字节。这个魔数主要是为了筛选来到服务端的数据包，有了这个魔数之后，服务端首先取出前面四个字节进行比对，能够在第一时间识别出这个数据包并非是遵循自定义协议的，也就是无效数据包，为了安全考虑可以直接关闭连接以节省资源。
   - **序列化器编号** ：标识序列化的方式，比如是使用 Java 自带的序列化，还是 json，kyro 等序列化方式。
   - **消息体长度** ： 运行时计算出来。
   - ......
 - [ ] **编写测试为重构代码提供信心**
-
+- [ ] **服务监控中心（类似dubbo admin）**
+- [x] **设置 gzip 压缩**
 ### 项目模块概览
 
 ![](./images/RPC框架各个模块介绍.png)
-
-## 运行项目
-
-### 导入项目
-
-fork 项目到自己的仓库，然后克隆项目到自己的本地：`git clone git@github.com:username/guide-rpc-framework.git`，使用 IDEA 打开，等待项目初始化完成。
-
-### 初始化 git hooks
-
-**这一步主要是为了在 commit 代码之前，跑 Check Style，保证代码格式没问题，如果有问题的话就不能提交。**
-
-> 以下演示的是 Mac/Linux 对应的操作，Window 用户需要手动将 `config/git-hooks` 目录下的`pre-commit` 文件拷贝到 项目下的 `.git/hooks/` 目录。
-
-执行下面这些命令：
-
-```shell
-➜  guide-rpc-framework git:(master) ✗ chmod +x ./init.sh
-➜  guide-rpc-framework git:(master) ✗ ./init.sh
-```
-
-`init.sh` 这个脚本的主要作用是将 git commit 钩子拷贝到项目下的 `.git/hooks/` 目录，这样你每次 commit 的时候就会执行了。
-
-### CheckStyle 插件下载和配置
-
-IntelliJ IDEA-> Preferences->Plugins->搜索下载 CheckStyle 插件，然后按照如下方式进行配置。
-
-![CheckStyle 插件下载和配置](./images/setting-check-style.png)
-
-配置完成之后，按照如下方式使用这个插件！
-
-![插件使用方式](./images/run-check-style.png)
-
-### 下载运行 zookeeper
-
-这里使用 Docker 来下载安装。
-
-下载：
-
-```shell
-docker pull zookeeper:3.5.8
-```
-
-运行：
-
-```shell
-docker run -d --name zookeeper -p 2181:2181 zookeeper:3.5.8
-```
 
 ## 使用
 
