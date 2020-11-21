@@ -1,4 +1,4 @@
-package com.zhi.registry.zk.util;
+package com.zhi.registry.zk.uril;
 
 import com.zhi.enumeration.RpcConfigProperties;
 import com.zhi.exception.RpcException;
@@ -118,7 +118,7 @@ public final class CuratorUtils {
 
     /**
      * 注册监听指定节点
-     *
+     * 其实就是每当有新服务生产者注册进来就更新服务地址注册表...
      * @param rpcServiceName 服务对象接口名 eg:com.zhi.HelloService
      */
     private static void registerWatcher(String rpcServiceName, CuratorFramework zkClient) {

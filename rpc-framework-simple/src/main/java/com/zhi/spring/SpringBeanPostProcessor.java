@@ -16,10 +16,11 @@ import org.springframework.stereotype.Component;
  * @Author WenZhiLuo
  * @Date 2020-10-27 15:17
  */
-@Component
 @Slf4j
+@Component
 public class SpringBeanPostProcessor implements BeanPostProcessor {
     private final ServiceProvider serviceProvider;
+
     public SpringBeanPostProcessor() {
         serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
     }

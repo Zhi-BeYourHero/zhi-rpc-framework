@@ -1,7 +1,7 @@
 package com.zhi.registry.zk;
 
 import com.zhi.registry.ServiceRegistry;
-import com.zhi.registry.zk.util.CuratorUtils;
+import com.zhi.registry.zk.uril.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 

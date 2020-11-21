@@ -17,8 +17,8 @@ public class NettyClientMain2 {
         //1. 获取客户端类,其成员变量主要由host和port, 和一个sendRpcRequest方法,后面由代理类来代理
         //由客户端指定host和port转为服务端指定，客户端获取service
         ClientTransport clientTransport = new NettyClientTransport();
-        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder().group("test2")
-                .version("version2").build();
+        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder().group("test3")
+                .version("version3").build();
         //2. 生成客户端代理类
         RpcClientProxy rpcClientProxy = new RpcClientProxy(clientTransport, rpcServiceProperties);
         //3. 根据客户端代理类获取我们需要的代理对象,这样代理方法就能生效
@@ -30,7 +30,6 @@ public class NettyClientMain2 {
         String hello2 = helloService.hello(new Hello("111", "222"));
         assert "Hello description is 222".equals(hello2);
         System.out.println(hello2);
-        Thread.sleep(12000);
         for (int i = 0; i < 10; i++) {
             helloService.hello(new Hello("111", "222"));
         }

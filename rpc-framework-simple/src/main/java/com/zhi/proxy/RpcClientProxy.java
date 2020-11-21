@@ -75,6 +75,7 @@ public class RpcClientProxy implements InvocationHandler {
         RpcResponse<Object> rpcResponse = null;
         if (clientTransport instanceof NettyClientTransport) {
             CompletableFuture<RpcResponse<Object>> completableFuture = (CompletableFuture<RpcResponse<Object>>) clientTransport.sendRpcRequest(rpcRequest);
+            //这个get方法会一直阻塞直到completableFuture调用了complete方法将RpcResponse<Object>类型对象传入
             rpcResponse = completableFuture.get();
         }
         if (clientTransport instanceof SocketRpcClient) {

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * @Author WenZhiLuo
  * @Date 2020-10-10 11:41
  */
-@RpcService(group = "test1", version = "version1")
+@RpcService(group = "test12", version = "version12")
 public class HelloServiceImpl implements HelloService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloServiceImpl.class);

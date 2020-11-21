@@ -1,7 +1,7 @@
 package com.zhi.config;
 
 import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
-import com.zhi.registry.zk.util.CuratorUtils;
+import com.zhi.registry.zk.uril.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -18,6 +18,7 @@ public class CustomShutdownHook {
     }
     public void clearAll() {
         log.info("addShutdownHook for clearAll");
+        //在JVM销毁前执行的一个线程.当然这个线程依然要自己写.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             CuratorUtils.clearRegistry(CuratorUtils.getZkClient());
             ThreadPoolFactoryUtils.shutDownAllThreadPool();

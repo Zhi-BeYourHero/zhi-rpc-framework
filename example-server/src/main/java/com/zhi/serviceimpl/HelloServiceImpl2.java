@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @Date 2020-10-10 11:41
  */
 @Slf4j
-@RpcService(group = "test2", version = "version1")
+@RpcService(group = "test21", version = "version11")
 public class HelloServiceImpl2 implements HelloService {
 
     static {
