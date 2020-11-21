@@ -1,15 +1,15 @@
 package com.zhi.remoting.transport.netty.client;
 
-import com.zhi.enumeration.RpcMessageType;
+import com.zhi.enums.SerializableTypeEnum;
 import com.zhi.factory.SingletonFactory;
-import com.zhi.remoting.dto.RpcRequest;
+import com.zhi.remoting.constants.RpcConstants;
+import com.zhi.remoting.dto.RpcMessage;
 import com.zhi.remoting.dto.RpcResponse;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
-
 import java.net.InetSocketAddress;
 
 /**
@@ -36,9 +36,15 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
         try {
             //客户端接收到的服务端响应
             log.info("客户端接收到了消息：{}", msg);
-            if (msg instanceof RpcResponse) {
-                RpcResponse<Object> rpcResponse = (RpcResponse<Object>) msg;
-                unprocessedRequests.complete(rpcResponse);
+            if (msg instanceof RpcMessage) {
+                RpcMessage tmp = (RpcMessage) msg;
+                byte messageType = tmp.getMessageType();
+                if (messageType == RpcConstants.HEARTBEAT_RESPONSE_TYPE) {
+                    log.info("heart [{}]", tmp.getData());
+                } else if (messageType == RpcConstants.RESPONSE_TYPE) {
+                    RpcResponse<Object> rpcResponse = (RpcResponse<Object>) tmp.getData();
+                    unprocessedRequests.complete(rpcResponse);
+                }
             }
         } finally {
             /*
@@ -57,8 +63,11 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
             if (state == IdleState.WRITER_IDLE) {
                 log.info("write idle happen [{}]", ctx.channel().remoteAddress());
                 Channel channel = channelProvider.get((InetSocketAddress) ctx.channel().remoteAddress());
-                RpcRequest rpcRequest = RpcRequest.builder().rpcMessageType(RpcMessageType.HEART_BEAT).build();
-                channel.writeAndFlush(rpcRequest).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+                RpcMessage rpcMessage = new RpcMessage();
+                rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
+                rpcMessage.setMessageType(RpcConstants.HEARTBEAT_REQUEST_TYPE);
+                rpcMessage.setData(RpcConstants.PING);
+                channel.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
             }
         } else {
             super.userEventTriggered(ctx, evt);

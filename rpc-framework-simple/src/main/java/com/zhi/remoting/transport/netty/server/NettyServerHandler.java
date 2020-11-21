@@ -1,7 +1,9 @@
 package com.zhi.remoting.transport.netty.server;
 
-import com.zhi.enumeration.RpcMessageType;
-import com.zhi.enumeration.RpcResponseCode;
+import com.zhi.enums.RpcResponseCodeEnum;
+import com.zhi.enums.SerializableTypeEnum;
+import com.zhi.remoting.constants.RpcConstants;
+import com.zhi.remoting.dto.RpcMessage;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.handler.RpcRequestHandler;
@@ -31,30 +33,37 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
-                //1.获取请求
-                log.info("server receive msg: [{}] ", msg);
-                RpcRequest rpcRequest = (RpcRequest) msg;
-                if (rpcRequest.getRpcMessageType() == RpcMessageType.HEART_BEAT) {
-                    log.info("receive heat beat msg from client");
-                    return;
-                }
-                //3.调用对应的服务,执行目标方法（客户端需要执行的方法）并且返回方法结果
-                Object result = rpcRequestHandler.handle(rpcRequest);
-                //4.输出结果
-                log.info(String.format("server get result: %s", result.toString()));
-                if (ctx.channel().isActive() && ctx.channel().isWritable()) {
-                    //返回方法执行结果给客户端
-                    //添加监听器，
-                    RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
-                    /**
-                     * A {@link ChannelFutureListener} that closes the {@link Channel} when the
-                     * operation ended up with a failure or cancellation rather than a success.
-                     */
-                    ctx.writeAndFlush(rpcResponse).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-                } else {
-                    RpcResponse<Object> rpcResponse = RpcResponse.fail(RpcResponseCode.FAIL);
-                    ctx.writeAndFlush(rpcResponse).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-                    log.error("not writable now, message dropped");
+                if (msg instanceof RpcMessage) {
+                    log.info("server receive msg: [{}] ", msg);
+                    byte messageType = ((RpcMessage) msg).getMessageType();
+                    if (messageType == RpcConstants.HEARTBEAT_REQUEST_TYPE) {
+                        RpcMessage rpcMessage = new RpcMessage();
+                        rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
+                        rpcMessage.setMessageType(RpcConstants.HEARTBEAT_RESPONSE_TYPE);
+                        rpcMessage.setData(RpcConstants.PONG);
+                        ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+                    } else {
+                        RpcRequest rpcRequest = (RpcRequest) ((RpcMessage) msg).getData();
+                        // Execute the target method (the method the client needs to execute) and return the method result
+                        Object result = rpcRequestHandler.handle(rpcRequest);
+                        log.info(String.format("server get result: %s", result.toString()));
+                        if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                            RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
+                            RpcMessage rpcMessage = new RpcMessage();
+                            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
+                            rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
+                            rpcMessage.setData(rpcResponse);
+                            ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+                        } else {
+                            RpcResponse<Object> rpcResponse = RpcResponse.fail(RpcResponseCodeEnum.FAIL);
+                            RpcMessage rpcMessage = new RpcMessage();
+                            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
+                            rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
+                            rpcMessage.setData(rpcResponse);
+                            ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+                            log.error("not writable now, message dropped");
+                        }
+                    }
                 }
             } finally {
                 /* 确保 ByteBuf 被释放，不然可能会有内存泄露问题

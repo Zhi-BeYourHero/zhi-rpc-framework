@@ -1,6 +1,6 @@
 package com.zhi.registry.zk;
 
-import com.zhi.enumeration.RpcErrorMessage;
+import com.zhi.enums.RpcErrorMessageEnum;
 import com.zhi.exception.RpcException;
 import com.zhi.loadbalance.LoadBalance;
 import com.zhi.loadbalance.RandomLoadBalance;
@@ -29,7 +29,7 @@ public class ZkServiceDiscovery implements ServiceDiscovery {
         CuratorFramework zkClient = CuratorUtils.getZkClient();
         List<String> serviceAddressList = CuratorUtils.getChildrenNodes(zkClient, rpcServiceName);
         if (serviceAddressList.size() == 0) {
-            throw new RpcException(RpcErrorMessage.SERVICE_CAN_NOT_BE_FOUND, rpcServiceName);
+            throw new RpcException(RpcErrorMessageEnum.SERVICE_CAN_NOT_BE_FOUND, rpcServiceName);
         }
         //通过负载均衡
         String targetServiceURL = loadBalance.selectServiceAddress(serviceAddressList);

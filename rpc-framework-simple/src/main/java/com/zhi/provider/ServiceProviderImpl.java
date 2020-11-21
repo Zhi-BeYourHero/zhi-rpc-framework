@@ -1,11 +1,10 @@
 package com.zhi.provider;
 
 import com.zhi.entity.RpcServiceProperties;
-import com.zhi.enumeration.RpcErrorMessage;
+import com.zhi.enums.RpcErrorMessageEnum;
 import com.zhi.exception.RpcException;
 import com.zhi.extension.ExtensionLoader;
 import com.zhi.registry.ServiceRegistry;
-import com.zhi.registry.zk.ZkServiceRegistry;
 import com.zhi.remoting.transport.netty.server.NettyServer;
 import lombok.extern.slf4j.Slf4j;
 import java.net.InetAddress;
@@ -62,7 +61,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     public Object getService(RpcServiceProperties rpcServiceProperties) {
         Object service = serviceMap.get(rpcServiceProperties.getServiceName());
         if (service == null) {
-            throw new RpcException(RpcErrorMessage.SERVICE_CAN_NOT_BE_FOUND);
+            throw new RpcException(RpcErrorMessageEnum.SERVICE_CAN_NOT_BE_FOUND);
         }
         return service;
     }

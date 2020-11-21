@@ -1,1 +1,1 @@
-kryo=github.javaguide.serialize.kyro.KryoSerializer
+kryo=com.zhi.serialize.kryo.KryoSerializer

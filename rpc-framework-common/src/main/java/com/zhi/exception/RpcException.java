@@ -1,6 +1,6 @@
 package com.zhi.exception;
 
-import com.zhi.enumeration.RpcErrorMessage;
+import com.zhi.enums.RpcErrorMessageEnum;
 
 /**
  * @Description
@@ -8,7 +8,7 @@ import com.zhi.enumeration.RpcErrorMessage;
  * @Date 2020-10-10 13:55
  */
 public class RpcException extends RuntimeException {
-    public RpcException(RpcErrorMessage rpcErrorMessageEnum, String detail) {
+    public RpcException(RpcErrorMessageEnum rpcErrorMessageEnum, String detail) {
         super(rpcErrorMessageEnum.getMessage() + ":" + detail);
     }
 
@@ -16,7 +16,7 @@ public class RpcException extends RuntimeException {
         super(message, cause);
     }
 
-    public RpcException(RpcErrorMessage rpcErrorMessageEnum) {
+    public RpcException(RpcErrorMessageEnum rpcErrorMessageEnum) {
         super(rpcErrorMessageEnum.getMessage());
     }
 }

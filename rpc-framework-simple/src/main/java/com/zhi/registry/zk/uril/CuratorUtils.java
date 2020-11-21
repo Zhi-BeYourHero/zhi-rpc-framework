@@ -1,6 +1,6 @@
 package com.zhi.registry.zk.uril;
 
-import com.zhi.enumeration.RpcConfigProperties;
+import com.zhi.enums.RpcConfigPropertiesEnum;
 import com.zhi.exception.RpcException;
 import com.zhi.utils.file.PropertiesFileUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -98,9 +98,9 @@ public final class CuratorUtils {
     }
     //进行了优化，使用ExponentialBackoffRetry，代替RetryNTimes
     public static CuratorFramework getZkClient() {
-        Properties properties = PropertiesFileUtils.readPropertiesFile(RpcConfigProperties.RPC_CONFIG_PATH.getPropertyValue());
+        Properties properties = PropertiesFileUtils.readPropertiesFile(RpcConfigPropertiesEnum.RPC_CONFIG_PATH.getPropertyValue());
         if (properties != null) {
-            defaultZookeeperAddress = properties.getProperty(RpcConfigProperties.ZK_ADDRESS.getPropertyValue());
+            defaultZookeeperAddress = properties.getProperty(RpcConfigPropertiesEnum.ZK_ADDRESS.getPropertyValue());
         }
         if (zkClient != null && zkClient.getState() == CuratorFrameworkState.STARTED) {
             return zkClient;
