@@ -11,5 +11,17 @@
 
     <artifactId>example-server</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.zhi</groupId>
+            <artifactId>rpc-framework-simple</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zhi</groupId>
+            <artifactId>hello-service-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
