@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * @Description
+ * @Description refer to dubbo spi: https://dubbo.apache.org/zh-cn/docs/source_code_guide/dubbo-spi.html
  * @Author WenZhiLuo
  * @Date 2020-10-27 20:52
  */
@@ -94,14 +94,16 @@ public final class ExtensionLoader<T> {
     }
 
     private Map<String, Class<?>> getExtensionClasses() {
+        // get the loaded extension class from the cache
         Map<String, Class<?>> classes = cachedClasses.get();
+        // double check
         if (classes == null) {
             synchronized (cachedClasses) {
                 classes = cachedClasses.get();
                 if (classes == null) {
                     classes = new HashMap<>();
                     // load all extensions from our extensions directory
-                    loadDirectory(classes, SERVICE_DIRECTORY);
+                    loadDirectory(classes);
                     cachedClasses.set(classes);
                 }
             }
@@ -109,9 +111,8 @@ public final class ExtensionLoader<T> {
         return classes;
     }
 
-    private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir) {
-        String fileName = dir + type.getName();
-        System.out.println(fileName);
+    private void loadDirectory(Map<String, Class<?>> extensionClasses) {
+        String fileName = ExtensionLoader.SERVICE_DIRECTORY + type.getName();
         try {
             Enumeration<URL> urls;
             ClassLoader classLoader = ExtensionLoader.class.getClassLoader();

@@ -1,10 +1,11 @@
 package com.zhi.remoting.transport.netty.client;
 
+import com.zhi.extension.ExtensionLoader;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
-import com.zhi.serialize.kryo.KryoSerializer;
+import com.zhi.serialize.Serializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -35,7 +36,7 @@ public class NettyClient {
     public NettyClient() {
         eventLoopGroup = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
-        KryoSerializer kryoSerializer = new KryoSerializer();
+        Serializer kryoSerializer = ExtensionLoader.getExtensionLoader(Serializer.class).getExtension("kryo");
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))

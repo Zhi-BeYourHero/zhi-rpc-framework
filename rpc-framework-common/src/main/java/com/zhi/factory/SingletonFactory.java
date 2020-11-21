@@ -1,5 +1,6 @@
 package com.zhi.factory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,9 +20,9 @@ public final class SingletonFactory {
         synchronized (c) {
             if (instance == null) {
                 try {
-                    instance = c.newInstance();
+                    instance = c.getDeclaredConstructor().newInstance();
                     OBJECT_MAP.put(key, instance);
-                } catch (IllegalAccessException | InstantiationException e) {
+                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
             }

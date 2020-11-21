@@ -1,10 +1,13 @@
 package com.zhi.serialize;
 
+import com.zhi.extension.SPI;
+
 /**
  * @Description 序列化接口，所有序列化类都要实现这个接口
  * @Author WenZhiLuo
  * @Date 2020-10-11 10:29
  */
+@SPI
 public interface Serializer {
     /**
      * 序列化

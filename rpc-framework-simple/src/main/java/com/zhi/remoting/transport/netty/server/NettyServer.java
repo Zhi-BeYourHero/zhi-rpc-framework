@@ -1,11 +1,16 @@
 package com.zhi.remoting.transport.netty.server;
 
 import com.zhi.config.CustomShutdownHook;
+import com.zhi.entity.RpcServiceProperties;
+import com.zhi.extension.ExtensionLoader;
+import com.zhi.factory.SingletonFactory;
+import com.zhi.provider.ServiceProvider;
+import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
-import com.zhi.serialize.kryo.KryoSerializer;
+import com.zhi.serialize.Serializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -19,7 +24,6 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
@@ -33,9 +37,16 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class NettyServer {
     //TODO 话说为什么这个变量应该是final的？。。。 然后又删了,又加回去了额
-    private final KryoSerializer kryoSerializer = new KryoSerializer();
+    private final Serializer kryoSerializer = ExtensionLoader.getExtensionLoader(Serializer.class).getExtension("kryo");
     public static final int PORT = 9998;
+    private final ServiceProvider serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
 
+    public void registerService(Object service) {
+        serviceProvider.publishService(service);
+    }
+    public void registerService(Object service, RpcServiceProperties rpcServiceProperties) {
+        serviceProvider.publishService(service, rpcServiceProperties);
+    }
     @SneakyThrows
     public void start() {
         //这个钩子的添加从start()方法末尾改到前面，然后又让类实现InitializingBean的afterPropertiesSet方法中调用->最后又放到头...当服务端(provider)关闭时候做一些事情，比如说取消注册所有服务
