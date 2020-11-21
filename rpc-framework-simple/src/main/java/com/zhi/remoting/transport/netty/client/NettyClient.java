@@ -3,7 +3,7 @@ package com.zhi.remoting.transport.netty.client;
 import com.zhi.extension.ExtensionLoader;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
-import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
+import com.zhi.remoting.transport.netty.codec.DefaultDecoder;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
 import com.zhi.serialize.Serializer;
 import io.netty.bootstrap.Bootstrap;
@@ -55,7 +55,7 @@ public class NettyClient {
                         ch.pipeline().addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                         /*自定义序列化编解码器*/
                         // RpcResponse -> ByteBuf
-                        ch.pipeline().addLast(new NettyKryoDecoder(kryoSerializer, RpcResponse.class));
+                        ch.pipeline().addLast(new DefaultDecoder(RpcResponse.class));
                         // ByteBuf -> RpcRequest
                         ch.pipeline().addLast(new NettyKryoEncoder(kryoSerializer, RpcRequest.class));
                         ch.pipeline().addLast(new NettyClientHandler());

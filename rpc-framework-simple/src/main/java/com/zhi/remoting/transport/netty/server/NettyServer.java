@@ -8,7 +8,7 @@ import com.zhi.provider.ServiceProvider;
 import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
-import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
+import com.zhi.remoting.transport.netty.codec.DefaultDecoder;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
 import com.zhi.serialize.Serializer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -79,7 +79,7 @@ public class NettyServer {
                             // 30 秒之内没有收到客户端请求的话就关闭连接
                             ch.pipeline().addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
                             //添加一些处理器
-                            ch.pipeline().addLast(new NettyKryoDecoder(kryoSerializer, RpcRequest.class));
+                            ch.pipeline().addLast(new DefaultDecoder(RpcRequest.class));
                             ch.pipeline().addLast(new NettyKryoEncoder(kryoSerializer, RpcResponse.class));
                             ch.pipeline().addLast(new NettyServerHandler());
                         }

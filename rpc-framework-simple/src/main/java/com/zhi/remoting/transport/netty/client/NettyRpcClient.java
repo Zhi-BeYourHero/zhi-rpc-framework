@@ -5,7 +5,7 @@ import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoEncoder;
 import com.zhi.serialize.kryo.KryoSerializer;
 import com.zhi.remoting.transport.ClientTransport;
-import com.zhi.remoting.transport.netty.codec.kryo.NettyKryoDecoder;
+import com.zhi.remoting.transport.netty.codec.DefaultDecoder;
 import com.zhi.remoting.dto.RpcMessageChecker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -44,7 +44,7 @@ public class NettyRpcClient implements ClientTransport {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         /*自定义序列化解码器*/
-                        ch.pipeline().addLast(new NettyKryoDecoder(kryoSerializer, RpcResponse.class));
+                        ch.pipeline().addLast(new DefaultDecoder(RpcResponse.class));
                         ch.pipeline().addLast(new NettyKryoEncoder(kryoSerializer, RpcRequest.class));
                         ch.pipeline().addLast(new NettyClientHandler());
                     }
