@@ -11,8 +11,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum SerializableTypeEnum {
-
-    KRYO((byte) 0x01, "kryo");
+    JAVA((byte) 0x00, "java"),
+    KRYO((byte) 0x01, "kryo"),
+    HESSIAN((byte) 0x02, "hessian"),
+    PROTOSTUFF((byte) 0x03, "protostuff");
     private final byte code;
     private final String name;
 

@@ -1,1 +1,4 @@
 kryo=com.zhi.serialize.kryo.KryoSerializer
+java=com.zhi.serialize.java.DefaultJavaSerializer
+hessian=com.zhi.serialize.hessian.HessianSerializer
+protostuff=com.zhi.serialize.protostuff.ProtoStuffSerializer

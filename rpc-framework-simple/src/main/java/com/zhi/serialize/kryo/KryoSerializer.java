@@ -39,7 +39,7 @@ public class KryoSerializer implements Serializer {
      * @return
      */
     @Override
-    public byte[] serialize(Object obj) {
+    public <T> byte[] serialize(T obj) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              Output output = new Output(byteArrayOutputStream)) {
             Kryo kryo = KRYO_THREAD_LOCAL.get();
@@ -53,8 +53,8 @@ public class KryoSerializer implements Serializer {
     }
 
     @Override
-    public <T> T deserialize(byte[] bytes, Class<T> clazz) {
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    public <T> T deserialize(byte[] data, Class<T> clazz) {
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
              Input input = new Input(byteArrayInputStream)) {
             Kryo kryo = KRYO_THREAD_LOCAL.get();
             // byte -> Object：从byte数组中反序列化出对象
