@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  *  自定义编码器
  *  4B  magic   code 魔法数
+ *  魔数 ： 通常是 4 个字节。这个魔数主要是为了筛选来到服务端的数据包，有了这个魔数之后，服务端首先取出前面四个字节进行比对，能够在第一时间识别出这个数据包并非是遵循自定义协议的，也就是无效数据包，为了安全考虑可以直接关闭连接以节省资源。
  *  1B version 版本
  *  4B full length  消息长度
  *  1B messageType 消息类型

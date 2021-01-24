@@ -1,0 +1,2 @@
+nettyClientTransport=com.zhi.remoting.transport.netty.client.NettyClientTransport
+socketRpcClient=com.zhi.remoting.transport.socket.SocketRpcClient

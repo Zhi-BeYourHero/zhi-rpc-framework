@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport;
 
+import com.zhi.extension.SPI;
 import com.zhi.remoting.dto.RpcRequest;
 
 /**
@@ -8,6 +9,7 @@ import com.zhi.remoting.dto.RpcRequest;
  * @Author WenZhiLuo
  * @Date 2020-10-11 9:22
  */
+@SPI
 public interface ClientTransport {
 
     /**
