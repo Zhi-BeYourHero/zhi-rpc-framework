@@ -10,7 +10,7 @@ import java.util.Random;
  */
 public class RandomLoadBalance extends AbstractLoadBalance {
     @Override
-    protected String doSelect(List<String> serviceAddresses) {
+    protected <T> T doSelect(List<T> serviceAddresses) {
         Random random = new Random();
         return serviceAddresses.get(random.nextInt(serviceAddresses.size()));
     }

@@ -1,7 +1,7 @@
 package com.zhi.config;
 
 import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
-import com.zhi.registry.zk.uril.CuratorUtils;
+import com.zhi.registry.zk.util.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**

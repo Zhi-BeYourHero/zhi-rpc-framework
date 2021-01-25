@@ -5,10 +5,9 @@ import com.zhi.exception.RpcException;
 import com.zhi.loadbalance.LoadBalance;
 import com.zhi.loadbalance.RandomLoadBalance;
 import com.zhi.registry.ServiceDiscovery;
-import com.zhi.registry.zk.uril.CuratorUtils;
+import com.zhi.registry.zk.util.CuratorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
-
 import java.net.InetSocketAddress;
 import java.util.List;
 

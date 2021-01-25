@@ -1,4 +1,4 @@
-package com.zhi.registry.zk.uril;
+package com.zhi.registry.zk.util;
 
 import com.zhi.enums.RpcConfigPropertiesEnum;
 import com.zhi.exception.RpcException;

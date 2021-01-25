@@ -1,1 +1,2 @@
 zk=com.zhi.registry.zk.ZkServiceRegistry
+nacos=com.zhi.registry.nacos.NacosServiceRegistry

@@ -9,7 +9,7 @@ import java.util.List;
  */
 public abstract class AbstractLoadBalance implements LoadBalance {
     @Override
-    public String selectServiceAddress(List<String> serviceAddresses) {
+    public <T> T selectServiceAddress(List<T> serviceAddresses) {
         if (serviceAddresses == null || serviceAddresses.size() == 0) {
             return null;
         }
@@ -19,5 +19,5 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         return doSelect(serviceAddresses);
     }
 
-    protected abstract String doSelect(List<String> serviceAddresses);
+    protected abstract <T> T doSelect(List<T> serviceAddresses);
 }
