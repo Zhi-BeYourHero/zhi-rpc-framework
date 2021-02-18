@@ -1,4 +1,6 @@
-package com.zhi.loadbalance;
+package com.zhi.loadbalance.loadbalanceimpl;
+
+import com.zhi.loadbalance.AbstractLoadBalance;
 
 import java.util.List;
 import java.util.Random;

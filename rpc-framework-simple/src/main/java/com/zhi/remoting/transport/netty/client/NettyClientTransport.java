@@ -28,8 +28,8 @@ public class NettyClientTransport implements ClientTransport {
     private final UnprocessedRequests unprocessedRequests;
     private final ChannelProvider channelProvider;
     public NettyClientTransport() {
-//        this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("zk");
-        this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("nacos");
+        this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("zk");
+//        this.serviceDiscovery = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("nacos");
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
         this.channelProvider = SingletonFactory.getInstance(ChannelProvider.class);
     }
@@ -46,9 +46,9 @@ public class NettyClientTransport implements ClientTransport {
             RpcMessage rpcMessage = new RpcMessage();
             rpcMessage.setData(rpcRequest);
 //            rpcMessage.setCodec(SerializableTypeEnum.JAVA.getCode());
-//            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
+            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
 //            rpcMessage.setCodec(SerializableTypeEnum.HESSIAN.getCode());
-            rpcMessage.setCodec(SerializableTypeEnum.PROTOSTUFF.getCode());
+//            rpcMessage.setCodec(SerializableTypeEnum.PROTOSTUFF.getCode());
             rpcMessage.setMessageType(RpcConstants.REQUEST_TYPE);
             channel.writeAndFlush(rpcMessage).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {

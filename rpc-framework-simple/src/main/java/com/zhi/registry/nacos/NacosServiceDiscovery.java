@@ -5,7 +5,7 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.zhi.enums.RpcErrorMessageEnum;
 import com.zhi.exception.RpcException;
 import com.zhi.loadbalance.LoadBalance;
-import com.zhi.loadbalance.RandomLoadBalance;
+import com.zhi.loadbalance.loadbalanceimpl.RandomLoadBalance;
 import com.zhi.registry.ServiceDiscovery;
 import com.zhi.registry.nacos.util.NacosUtil;
 import lombok.extern.slf4j.Slf4j;

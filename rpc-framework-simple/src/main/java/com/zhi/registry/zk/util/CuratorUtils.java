@@ -34,7 +34,7 @@ public final class CuratorUtils {
     //CuratorFramework还是尽量在CuratorHelper这个使用到了的这个类中进行初始化吧，要不然放在方法参数的话，
     //外部类每次调用这个工具类都要传一次显然是不合理的...  ->  从该类的static代码块new对象到通过单例工厂
     private static CuratorFramework zkClient;
-    private static String defaultZookeeperAddress = "127.0.0.1:2181";
+    private static String defaultZookeeperAddress = "192.168.43.130:2181";
 
     private CuratorUtils() {
     }
