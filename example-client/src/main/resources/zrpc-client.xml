@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:AresClient="http://www.zhi-rpc.com/schema/zrpc-reference"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.zhi-rpc.com/schema/zrpc-reference http://www.zhi-rpc.com/schema/zrpc-reference.xsd">
+
+    <!-- 引入远程服务 -->
+    <AresClient:reference id="remoteHelloService"
+                          interface="com.zhi.api.HelloService"
+                          clusterStrategy="Random"
+                          remoteAppKey="zrpc"
+                          groupName="default"
+                          timeout="3000"/>
+</beans>

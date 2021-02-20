@@ -10,10 +10,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 @RpcScan(basePackage = {"com.zhi"})
 public class NettyClientMain2 {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(NettyClientMain2.class);
         HelloController helloController = (HelloController) applicationContext.getBean("helloController");
         helloController.test();
     }
-
 }

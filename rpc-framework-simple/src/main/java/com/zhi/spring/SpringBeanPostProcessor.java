@@ -31,6 +31,14 @@ public class SpringBeanPostProcessor implements BeanPostProcessor {
         serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
         this.rpcClient = ExtensionLoader.getExtensionLoader(ClientTransport.class).getExtension("nettyClientTransport");
     }
+
+    /**
+     * 将@RpcService注解标注的类进行注册
+     * @param bean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
     @SneakyThrows
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {

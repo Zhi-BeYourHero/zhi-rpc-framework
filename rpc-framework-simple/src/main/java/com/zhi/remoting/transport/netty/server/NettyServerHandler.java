@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport.netty.server;
 
+import com.google.common.collect.Maps;
 import com.zhi.enums.RpcResponseCodeEnum;
 import com.zhi.enums.SerializableTypeEnum;
 import com.zhi.remoting.constants.RpcConstants;
@@ -14,16 +15,21 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+import java.util.concurrent.Semaphore;
+
 /**
  * @Description Netty中处理RpcRequest的Handler
  * 自定义服务端的 ChannelHandler 来处理客户端发过来的数据
  * <p>
  * 如果继承自 SimpleChannelInboundHandler 的话就不要考虑 ByteBuf 的释放 ，{@link SimpleChannelInboundHandler} 内部的
  * channelRead 方法会替你释放 ByteBuf ，避免可能导致的内存泄露问题。详见《Netty进阶之路 跟着案例学 Netty》
+ * 使用注解避免反复创建多个实例
  * @Author WenZhiLuo
  * @Date 2020-10-11 13:24
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     private final RpcRequestHandler rpcRequestHandler;
 
@@ -44,11 +50,14 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                         ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                     } else {
                         RpcRequest rpcRequest = (RpcRequest) ((RpcMessage) msg).getData();
+                        long consumeTimeOut = rpcRequest.getInvokeTimeout();
                         // Execute the target method (the method the client needs to execute) and return the method result
                         Object result = rpcRequestHandler.handle(rpcRequest);
                         log.info(String.format("server get result: %s", result.toString()));
                         if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                            // 根据服务调用结果组装调用返回对象(约定的服务通信对象)
                             RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
+                            rpcResponse.setInvokeTimeout(consumeTimeOut);
                             RpcMessage rpcMessage = new RpcMessage();
                             rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
                             rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
@@ -87,10 +96,18 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             super.userEventTriggered(ctx, evt);
         }
     }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        //flush()方法，刷新内存队列，将数据写入到对端。
+        ctx.flush();
+    }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.error("server catch exception");
         cause.printStackTrace();
+        //发生异常,关闭链路
         ctx.close();
     }
 }

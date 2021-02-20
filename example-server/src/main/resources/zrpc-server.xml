@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:ZrpcServer="http://www.zhi-rpc.com/schema/zrpc-service"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.zhi-rpc.com/schema/zrpc-service http://www.zhi-rpc.com/schema/zrpc-service.xsd">
+
+    <!-- 将一个bean发布为远程服务 -->
+    <bean id="helloService" class="com.zhi.serviceimpl.HelloServiceImpl3"/>
+    <ZrpcServer:service id="helloServiceRegister"
+                        interface="com.zhi.api.HelloService"
+                        ref="helloService"
+                        groupName="group1"
+                        weight="2"
+                        appKey="zrpc"
+                        workerThreads="100"
+                        serverPort="9094"
+                        timeout="600"/>
+    <!--                        groupName="default"-->
+
+</beans>

@@ -27,10 +27,16 @@ public class RpcResponse<T> implements Serializable {
      * 响应消息
      */
     private String message;
+
+    /**
+     * 客户端指定的服务超时时间
+     */
+    private long invokeTimeout;
     /**
      * 响应数据
      */
     private T data;
+
     public static <T> RpcResponse<T> success(T data, String requestId) {
         RpcResponse<T> response = new RpcResponse<>();
         response.setCode(RpcResponseCodeEnum.SUCCESS.getCode());

@@ -1,0 +1,2 @@
+http\://www.zhi-rpc.com/schema/zrpc-service=com.zhi.spring.xml.RemoteServiceNamespaceHandler
+http\://www.zhi-rpc.com/schema/zrpc-reference=com.zhi.spring.xml.RemoteReferenceNamespaceHandler

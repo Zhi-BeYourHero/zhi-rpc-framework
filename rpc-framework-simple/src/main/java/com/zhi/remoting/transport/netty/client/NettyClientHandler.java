@@ -5,6 +5,7 @@ import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.constants.RpcConstants;
 import com.zhi.remoting.dto.RpcMessage;
 import com.zhi.remoting.dto.RpcResponse;
+import com.zhi.revoker.RevokerResponseHolder;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -43,7 +44,9 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
                     log.info("heart [{}]", tmp.getData());
                 } else if (messageType == RpcConstants.RESPONSE_TYPE) {
                     RpcResponse<Object> rpcResponse = (RpcResponse<Object>) tmp.getData();
-                    unprocessedRequests.complete(rpcResponse);
+                    // 将Netty异步返回的结果存入阻塞队列,以便调用端同步获取(同步服务、而netty是NIO、异步返回的结果，因此根据配置的超时时间来判断结果是否可用)
+                    RevokerResponseHolder.putResultValue(rpcResponse);
+//                    unprocessedRequests.complete(rpcResponse);
                 }
             }
         } finally {
@@ -73,7 +76,11 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
             super.userEventTriggered(ctx, evt);
         }
     }
-
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        //flush()方法，刷新内存队列，将数据写入到对端。
+        ctx.flush();
+    }
 
     /**
      * 处理客户端消息发生异常的时候被调用

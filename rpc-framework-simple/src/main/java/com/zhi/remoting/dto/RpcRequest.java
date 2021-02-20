@@ -1,6 +1,7 @@
 package com.zhi.remoting.dto;
 
 import com.zhi.entity.RpcServiceProperties;
+import com.zhi.remoting.model.ProviderService;
 import lombok.*;
 import java.io.Serializable;
 
@@ -17,6 +18,8 @@ import java.io.Serializable;
 @ToString
 public class RpcRequest implements Serializable {
     private static final long serialVersionUID = 1905122041950251207L;
+    private ProviderService providerService;
+    // 请求ID，唯一标识一次返回值
     private String requestId;
     private String interfaceName;
     private String methodName;
@@ -24,6 +27,10 @@ public class RpcRequest implements Serializable {
     private Class<?>[] paramTypes;
     private String version;
     private String group;
+    //消费端应用名
+    private String appName;
+    //消费请求超时时长
+    private long invokeTimeout;
     public RpcServiceProperties toRpcProperties() {
         return RpcServiceProperties.builder().serviceName(this.getInterfaceName())
                 .version(this.getVersion())

@@ -1,5 +1,6 @@
 package com.zhi.remoting.transport.netty.client;
 
+import com.google.common.collect.Lists;
 import com.zhi.remoting.transport.netty.codec.RpcMessageDecoder;
 import com.zhi.remoting.transport.netty.codec.RpcMessageEncoder;
 import io.netty.bootstrap.Bootstrap;
@@ -15,7 +16,10 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,7 +34,7 @@ public class NettyClient {
 
     // 初始化相关资源比如 EventLoopGroup、Bootstrap
     public NettyClient() {
-        eventLoopGroup = new NioEventLoopGroup();
+        eventLoopGroup = new NioEventLoopGroup(10);
         bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
@@ -47,6 +51,7 @@ public class NettyClient {
                          *        an {@link IdleStateEvent} whose state is {@link IdleState#READER_IDLE}
                          *        will be triggered when no read was performed for the specified
                          *        period of time.  Specify {@code 0} to disable.
+                         *        当客户端的所有ChannelHandler中5s内没有write事件，则会触发userEventTriggered方法
                          **/
                         ch.pipeline().addLast(new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
                         /*自定义序列化编解码器*/
@@ -59,13 +64,21 @@ public class NettyClient {
     @SneakyThrows
     public Channel doConnect(InetSocketAddress inetSocketAddress) {
         CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
+        // `isSuccessHolder`是当前线程想要等待注册结果的标记
         //异步地连接到远程节点,注册一个 ChannelFutureListener，以便在操作完成时获得通知
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 log.info("客户端连接成功!");
                 completableFuture.complete(future.channel());
+            } else {
+                log.info("客户端连接失败!");
+                //若Channel建立失败,保存建立失败的标记
+                future.cause().printStackTrace();
+                // Success == false 直接返回null
+                completableFuture.completeExceptionally(future.cause());
             }
         });
+        // 异步等待返回Channel
         return completableFuture.get();
     }
     public static void close() {

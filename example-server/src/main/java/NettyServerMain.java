@@ -20,6 +20,6 @@ public class NettyServerMain {
         RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder()
                 .group("test3").version("version3").build();
         nettyServer.registerService(helloService, rpcServiceProperties);
-        nettyServer.start();
+//        nettyServer.start(9998);
     }
 }
