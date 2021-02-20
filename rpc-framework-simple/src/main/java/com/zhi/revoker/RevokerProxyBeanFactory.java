@@ -2,12 +2,15 @@ package com.zhi.revoker;
 
 import com.zhi.cluster.ClusterStrategy;
 import com.zhi.cluster.engine.ClusterEngine;
+import com.zhi.cluster.failmode.FailMode;
 import com.zhi.entity.RpcServiceProperties;
 import com.zhi.registry.IRegisterCenter4Invoker;
 import com.zhi.registry.zk.util.RegisterCenter;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.remoting.dto.RpcResponse;
 import com.zhi.remoting.model.ProviderService;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -24,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @Author WenZhiLuo
  * @Date 2021-02-19 15:17
  */
+@Slf4j
 public class RevokerProxyBeanFactory  implements InvocationHandler {
     private ExecutorService fixedThreadPool = null;
 
@@ -35,12 +39,14 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
     private static int threadWorkerNumber = 10;
     //负载均衡策略
     private String clusterStrategy;
+    private String failMode;
     private final RpcServiceProperties rpcServiceProperties;
 
-    public RevokerProxyBeanFactory(Class<?> targetInterface, int consumeTimeout, String clusterStrategy) {
+    public RevokerProxyBeanFactory(Class<?> targetInterface, int consumeTimeout, String clusterStrategy, String failMode) {
         this.targetInterface = targetInterface;
         this.consumeTimeout = consumeTimeout;
         this.clusterStrategy = clusterStrategy;
+        this.failMode = failMode;
         rpcServiceProperties = RpcServiceProperties.builder().group("").version("").build();
     }
     @Override
@@ -73,22 +79,23 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
                 .requestId(UUID.randomUUID().toString() + "-" + Thread.currentThread().getId())
                 //设置本次调用的超时时间
                 .invokeTimeout(consumeTimeout)
+                .failMode(failMode)
                 .group(rpcServiceProperties.getGroup())
                 .version(rpcServiceProperties.getVersion())
                 .build();
-        try {
-            //构建用来发起调用的线程池
-            if (fixedThreadPool == null) {
-                synchronized (RevokerProxyBeanFactory.class) {
-                    if (null == fixedThreadPool) {
-                        fixedThreadPool = Executors.newFixedThreadPool(threadWorkerNumber);
-                    }
+        //构建用来发起调用的线程池
+        if (fixedThreadPool == null) {
+            synchronized (RevokerProxyBeanFactory.class) {
+                if (null == fixedThreadPool) {
+                    fixedThreadPool = Executors.newFixedThreadPool(threadWorkerNumber);
                 }
             }
-            //根据服务提供者的ip,port,构建InetSocketAddress对象,标识服务提供者地址
-            String serverIp = request.getProviderService().getServerIp();
-            int serverPort = request.getProviderService().getServerPort();
-            InetSocketAddress inetSocketAddress = new InetSocketAddress(serverIp, serverPort);
+        }
+        //根据服务提供者的ip,port,构建InetSocketAddress对象,标识服务提供者地址
+        String serverIp = request.getProviderService().getServerIp();
+        int serverPort = request.getProviderService().getServerPort();
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(serverIp, serverPort);
+        try {
             //提交本次调用信息到线程池fixedThreadPool,发起调用
             Future<RpcResponse> responseFuture = fixedThreadPool.submit(RevokerServiceCallable.of(inetSocketAddress, request));
             //获取调用的返回结果(阻塞若干秒等待返回)
@@ -97,7 +104,34 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
                 return response.getData();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            // 重试策略，重试一次
+            if (request.getFailMode().equals(FailMode.FAIL_RETRY.getCode())) {
+                log.info("由于出现了超时问题，开始Fail Retry，再次尝试...");
+                //提交本次调用信息到线程池fixedThreadPool,发起调用
+                Future<RpcResponse> responseFuture = fixedThreadPool.submit(RevokerServiceCallable.of(inetSocketAddress, request));
+                //获取调用的返回结果(阻塞若干秒等待返回)
+                RpcResponse response = responseFuture.get(request.getInvokeTimeout(), TimeUnit.MILLISECONDS);
+                if (response != null) {
+                    return response.getData();
+                }
+                // 重新选择一个服务提供者
+            } else if (request.getFailMode().equals(FailMode.FAIL_OVER.getCode())) {
+                log.info("由于出现了超时问题，开始Fail Over，选择另外一个ProviderService再次尝试...");
+                // 重新选择一个非当前出现访问问题的ProviderService,由于现在出问题但是待会儿可能就没问题了，所以就不选择remove，而是直接跳过
+                ProviderService curProviderService = providerService;
+                while (curProviderService == providerService) {
+                    curProviderService = clusterStrategyService.select(providerServices);
+                }
+                System.out.println("本地调用的服务提供者IP和Port：" + curProviderService.getServerIp() + ":" + curProviderService.getServerPort());
+                Future<RpcResponse> responseFuture = fixedThreadPool.submit(RevokerServiceCallable.of(inetSocketAddress, request));
+                RpcResponse response = responseFuture.get(request.getInvokeTimeout(), TimeUnit.MILLISECONDS);
+                if (response != null) {
+                    return response.getData();
+                }
+                //否则就是failFast，直接报错就好了...
+            } else {
+                throw new RuntimeException(e);
+            }
         }
         return null;
     }
@@ -109,11 +143,11 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
 
     private static volatile RevokerProxyBeanFactory singleton;
 
-    public static RevokerProxyBeanFactory singleton(Class<?> targetInterface, int consumeTimeout, String clusterStrategy) throws Exception {
+    public static RevokerProxyBeanFactory singleton(Class<?> targetInterface, int consumeTimeout, String clusterStrategy, String failMode) throws Exception {
         if (null == singleton) {
             synchronized (RevokerProxyBeanFactory.class) {
                 if (null == singleton) {
-                    singleton = new RevokerProxyBeanFactory(targetInterface, consumeTimeout, clusterStrategy);
+                    singleton = new RevokerProxyBeanFactory(targetInterface, consumeTimeout, clusterStrategy, failMode);
                 }
             }
         }

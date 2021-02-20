@@ -27,11 +27,11 @@ public class RevokerFactoryBeanDefinitionParser extends AbstractSingleBeanDefini
             String clusterStrategy = element.getAttribute("clusterStrategy");
             String remoteAppKey = element.getAttribute("remoteAppKey");
             String groupName = element.getAttribute("groupName");
-
+            String failMode = element.getAttribute("failMode");
             bean.addPropertyValue("timeout", Integer.parseInt(timeOut));
             bean.addPropertyValue("targetInterface", Class.forName(targetInterface));
             bean.addPropertyValue("remoteAppKey", remoteAppKey);
-
+            bean.addPropertyValue("failMode", failMode);
             if (StringUtils.isNotBlank(clusterStrategy)) {
                 bean.addPropertyValue("clusterStrategy", clusterStrategy);
             }

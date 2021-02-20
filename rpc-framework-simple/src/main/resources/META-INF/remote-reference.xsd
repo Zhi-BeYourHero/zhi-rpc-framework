@@ -17,6 +17,7 @@
                     <xsd:attribute name="clusterStrategy" type="xsd:string" use="optional"/>
                     <xsd:attribute name="remoteAppKey" type="xsd:string" use="required"/>
                     <xsd:attribute name="groupName" type="xsd:string" use="optional"/>
+                    <xsd:attribute name="failMode" type="xsd:string" use="optional"/>
                 </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>

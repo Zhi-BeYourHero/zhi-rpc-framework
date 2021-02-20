@@ -8,8 +8,9 @@
     <!-- 引入远程服务 -->
     <AresClient:reference id="remoteHelloService"
                           interface="com.zhi.api.HelloService"
-                          clusterStrategy="Random"
+                          clusterStrategy="Polling"
                           remoteAppKey="zrpc"
-                          groupName="default"
+                          groupName="group1"
+                          failMode="failOver"
                           timeout="3000"/>
 </beans>

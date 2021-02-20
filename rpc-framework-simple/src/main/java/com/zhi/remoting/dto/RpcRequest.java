@@ -31,6 +31,7 @@ public class RpcRequest implements Serializable {
     private String appName;
     //消费请求超时时长
     private long invokeTimeout;
+    private String failMode;
     public RpcServiceProperties toRpcProperties() {
         return RpcServiceProperties.builder().serviceName(this.getInterfaceName())
                 .version(this.getVersion())

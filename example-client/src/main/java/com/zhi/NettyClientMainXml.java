@@ -23,7 +23,7 @@ public class NettyClientMainXml {
         // 从spring上下文中根据id取出这个bean
         final HelloService helloService = (HelloService) context.getBean("remoteHelloService");
 
-        long count = 10L;
+        long count = 1L;
 
         //调用服务并打印结果
         for (int i = 0; i < count; i++) {

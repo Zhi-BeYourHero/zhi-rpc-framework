@@ -1,5 +1,6 @@
 package com.zhi.revoker;
 
+import com.zhi.cluster.failmode.FailMode;
 import com.zhi.registry.IRegisterCenter4Invoker;
 import com.zhi.registry.zk.util.RegisterCenter;
 import com.zhi.remoting.model.InvokerService;
@@ -32,6 +33,7 @@ public class RevokerFactoryBean implements FactoryBean, InitializingBean {
     private String remoteAppKey;
     //服务分组组名
     private String groupName = "default";
+    private String failMode = FailMode.FAIL_FAST.getCode();
     @Override
     public Object getObject() throws Exception {
         return serviceObject;
@@ -76,7 +78,7 @@ public class RevokerFactoryBean implements FactoryBean, InitializingBean {
         NettyChannelPoolFactory.channelPoolFactoryInstance().initChannelPoolFactory(providerMap);
 
         //获取服务提供者代理对象(是JDK的动态代理)
-        RevokerProxyBeanFactory proxyFactory = RevokerProxyBeanFactory.singleton(targetInterface, timeout, clusterStrategy);
+        RevokerProxyBeanFactory proxyFactory = RevokerProxyBeanFactory.singleton(targetInterface, timeout, clusterStrategy, failMode);
         this.serviceObject = proxyFactory.getProxy();
 
         //将消费者信息注册到注册中心(让注册中心知道有多少服务消费者)

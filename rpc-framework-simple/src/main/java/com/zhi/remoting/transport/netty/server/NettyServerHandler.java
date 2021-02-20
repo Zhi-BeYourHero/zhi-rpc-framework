@@ -51,6 +51,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                     } else {
                         RpcRequest rpcRequest = (RpcRequest) ((RpcMessage) msg).getData();
                         long consumeTimeOut = rpcRequest.getInvokeTimeout();
+                        //为了模拟超时效果，这里sleep 3s,因为超时时间设置的是3s
+                        Thread.sleep(3000);
                         // Execute the target method (the method the client needs to execute) and return the method result
                         Object result = rpcRequestHandler.handle(rpcRequest);
                         log.info(String.format("server get result: %s", result.toString()));
