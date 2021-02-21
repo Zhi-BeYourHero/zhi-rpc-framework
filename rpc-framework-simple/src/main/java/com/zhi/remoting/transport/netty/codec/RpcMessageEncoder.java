@@ -1,5 +1,7 @@
 package com.zhi.remoting.transport.netty.codec;
 
+import com.zhi.compress.Compress;
+import com.zhi.enums.CompressTypeEnum;
 import com.zhi.enums.SerializableTypeEnum;
 import com.zhi.extension.ExtensionLoader;
 import com.zhi.remoting.constants.RpcConstants;
@@ -58,6 +60,8 @@ public class RpcMessageEncoder extends MessageToByteEncoder<RpcMessage> {
             out.writeByte(messageType);
             //设置序列化
             out.writeByte(rpcMessage.getCodec());
+            //设置压缩类型
+            out.writeByte(rpcMessage.getCompress());
             // todo ?这个有什用？
             out.writeInt(ATOMIC_INTEGER.getAndDecrement());
             byte[] bodyBytes = null;
@@ -70,6 +74,11 @@ public class RpcMessageEncoder extends MessageToByteEncoder<RpcMessage> {
                 Serializer serializer = ExtensionLoader.getExtensionLoader(Serializer.class)
                         .getExtension(codecName);
                 bodyBytes = serializer.serialize(rpcMessage.getData());
+                // 把二进制数据进行压缩
+                String compressName = CompressTypeEnum.getName(rpcMessage.getCompress());
+                Compress compress = ExtensionLoader.getExtensionLoader(Compress.class)
+                        .getExtension(compressName);
+                bodyBytes = compress.compress(bodyBytes);
                 //消息头长度+内容长度
                 fullLength += bodyBytes.length;
             }

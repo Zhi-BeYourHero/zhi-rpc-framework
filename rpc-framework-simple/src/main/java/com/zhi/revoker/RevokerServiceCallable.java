@@ -1,5 +1,6 @@
 package com.zhi.revoker;
 
+import com.zhi.enums.CompressTypeEnum;
 import com.zhi.enums.SerializableTypeEnum;
 import com.zhi.remoting.constants.RpcConstants;
 import com.zhi.remoting.dto.RpcMessage;
@@ -98,6 +99,7 @@ public class RevokerServiceCallable implements Callable<RpcResponse> {
 //            rpcMessage.setCodec(SerializableTypeEnum.HESSIAN.getCode());
 //            rpcMessage.setCodec(SerializableTypeEnum.PROTOSTUFF.getCode());
             rpcMessage.setMessageType(RpcConstants.REQUEST_TYPE);
+            rpcMessage.setCompress(CompressTypeEnum.GZIP.getCode());
             // 将本次调用的信息写入Netty通道,发起异步调用
             ChannelFuture channelFuture = channel.writeAndFlush(rpcMessage);
             // syncUninterruptibly()让主线程同步等待子线程结果。

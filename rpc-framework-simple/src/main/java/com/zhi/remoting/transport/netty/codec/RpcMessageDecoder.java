@@ -1,5 +1,7 @@
 package com.zhi.remoting.transport.netty.codec;
 
+import com.zhi.compress.Compress;
+import com.zhi.enums.CompressTypeEnum;
 import com.zhi.enums.SerializableTypeEnum;
 import com.zhi.extension.ExtensionLoader;
 import com.zhi.remoting.constants.RpcConstants;
@@ -19,9 +21,9 @@ import java.util.Arrays;
  * @Date 2020-11-21 13:28
  * custom protocol decoder
  * <pre>
- *   0     1     2     3     4        5     6     7     8     9          10       11     12    13    14   15
- *   +-----+-----+-----+-----+--------+----+----+----+------+-----------+-------+-----------+-----+-----+-----+
- *   |   magic   code        |version | full length         | messageType| codec| RequestId                   |
+ *   0     1     2     3     4        5     6     7     8         9          10      11     12  13  14   15 16
+ *   +-----+-----+-----+-----+--------+----+----+----+------+-----------+-------+----- --+-----+-----+-------+
+ *   |   magic   code        |version | full length         | messageType| codec|compress|    RequestId       |
  *   +-----------------------+--------+---------------------+-----------+-----------+-----------+------------+
  *   |                                                                                                       |
  *   |                                         body                                                          |
@@ -29,7 +31,7 @@ import java.util.Arrays;
  *   |                                        ... ...                                                        |
  *   +-------------------------------------------------------------------------------------------------------+
  * 4B  magic code（魔法数）   1B version（版本）   4B full length（消息长度）    1B messageType（消息类型）
- * 1B codec（序列化类型）    4B  requestId（请求的Id）
+ * 1B compress（压缩类型） 1B codec（序列化类型）    4B  requestId（请求的Id）
  * body（object类型数据）
  * </pre>
  * <p>
@@ -86,27 +88,19 @@ public class RpcMessageDecoder extends LengthFieldBasedFrameDecoder {
         //读取前4个magic比对一下
         // note: must read ByteBuf in order
         // read the first 4 bit, which is the magic number, and compare
-        int len = RpcConstants.MAGIC_NUMBER.length;
-        byte[] tmp = new byte[len];
-        in.readBytes(tmp);
-        for (int i = 0; i < len; i++) {
-            if (tmp[i] != RpcConstants.MAGIC_NUMBER[i]) {
-                throw new IllegalArgumentException("Unknown magic code: " + Arrays.toString(tmp));
-            }
-        }
-        byte version = in.readByte();
-        if (version != RpcConstants.VERSION) {
-            throw new RuntimeException("version isn't compatible" + version);
-        }
+        checkMagicNumber(in);
+        checkVersion(in);
         int fullLength = in.readInt();
         //消息类型
         byte messageType = in.readByte();
         //读取序列化类型
         byte codecType = in.readByte();
+        byte compressType = in.readByte();
         int requestId = in.readInt();
         RpcMessage rpcMessage = RpcMessage.builder()
                 .codec(codecType)
                 .requestId(requestId)
+                .compress(compressType)
                 .messageType(messageType).build();
         if (messageType == RpcConstants.HEARTBEAT_REQUEST_TYPE) {
             rpcMessage.setData(RpcConstants.PING);
@@ -117,6 +111,11 @@ public class RpcMessageDecoder extends LengthFieldBasedFrameDecoder {
             if (bodyLength > 0) {
                 byte[] bs = new byte[bodyLength];
                 in.readBytes(bs);
+                // decompress the bytes
+                String compressName = CompressTypeEnum.getName(compressType);
+                Compress compress = ExtensionLoader.getExtensionLoader(Compress.class)
+                        .getExtension(compressName);
+                bs = compress.decompress(bs);
                 String codecName = SerializableTypeEnum.getName(rpcMessage.getCodec());
                 Serializer serializer = ExtensionLoader.getExtensionLoader(Serializer.class)
                         .getExtension(codecName);
@@ -130,5 +129,25 @@ public class RpcMessageDecoder extends LengthFieldBasedFrameDecoder {
             }
         }
         return rpcMessage;
+    }
+
+    private void checkVersion(ByteBuf in) {
+        // read the version and compare
+        byte version = in.readByte();
+        if (version != RpcConstants.VERSION) {
+            throw new RuntimeException("version isn't compatible" + version);
+        }
+    }
+
+    private void checkMagicNumber(ByteBuf in) {
+        // read the first 4 bit, which is the magic number, and compare
+        int len = RpcConstants.MAGIC_NUMBER.length;
+        byte[] tmp = new byte[len];
+        in.readBytes(tmp);
+        for (int i = 0; i < len; i++) {
+            if (tmp[i] != RpcConstants.MAGIC_NUMBER[i]) {
+                throw new IllegalArgumentException("Unknown magic code: " + Arrays.toString(tmp));
+            }
+        }
     }
 }

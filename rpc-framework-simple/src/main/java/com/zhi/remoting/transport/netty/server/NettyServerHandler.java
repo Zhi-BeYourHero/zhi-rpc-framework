@@ -41,35 +41,33 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             try {
                 if (msg instanceof RpcMessage) {
                     log.info("server receive msg: [{}] ", msg);
-                    byte messageType = ((RpcMessage) msg).getMessageType();
+                    RpcMessage curRpcMessage = (RpcMessage) msg;
+                    byte messageType = curRpcMessage.getMessageType();
+                    RpcMessage rpcMessage = new RpcMessage();
+                    rpcMessage.setCodec(curRpcMessage.getCodec());
+                    rpcMessage.setCompress(curRpcMessage.getCompress());
                     if (messageType == RpcConstants.HEARTBEAT_REQUEST_TYPE) {
-                        RpcMessage rpcMessage = new RpcMessage();
-                        rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
                         rpcMessage.setMessageType(RpcConstants.HEARTBEAT_RESPONSE_TYPE);
                         rpcMessage.setData(RpcConstants.PONG);
                         ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                     } else {
-                        RpcRequest rpcRequest = (RpcRequest) ((RpcMessage) msg).getData();
+                        RpcRequest rpcRequest = (RpcRequest) curRpcMessage.getData();
                         long consumeTimeOut = rpcRequest.getInvokeTimeout();
                         //为了模拟超时效果，这里sleep 3s,因为超时时间设置的是3s
-                        Thread.sleep(3000);
+//                        Thread.sleep(3000);
                         // Execute the target method (the method the client needs to execute) and return the method result
                         Object result = rpcRequestHandler.handle(rpcRequest);
                         log.info(String.format("server get result: %s", result.toString()));
+                        rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
                         if (ctx.channel().isActive() && ctx.channel().isWritable()) {
                             // 根据服务调用结果组装调用返回对象(约定的服务通信对象)
                             RpcResponse<Object> rpcResponse = RpcResponse.success(result, rpcRequest.getRequestId());
                             rpcResponse.setInvokeTimeout(consumeTimeOut);
-                            RpcMessage rpcMessage = new RpcMessage();
-                            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
-                            rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
                             rpcMessage.setData(rpcResponse);
                             ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                         } else {
                             RpcResponse<Object> rpcResponse = RpcResponse.fail(RpcResponseCodeEnum.FAIL);
-                            RpcMessage rpcMessage = new RpcMessage();
-                            rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
-                            rpcMessage.setMessageType(RpcConstants.RESPONSE_TYPE);
+                            rpcResponse.setInvokeTimeout(consumeTimeOut);
                             rpcMessage.setData(rpcResponse);
                             ctx.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
                             log.error("not writable now, message dropped");
