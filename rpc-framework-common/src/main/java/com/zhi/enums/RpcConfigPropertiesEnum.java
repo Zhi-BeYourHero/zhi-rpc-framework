@@ -8,7 +8,8 @@ package com.zhi.enums;
 public enum RpcConfigPropertiesEnum {
 
     RPC_CONFIG_PATH("rpc.properties"),
-    ZK_ADDRESS("rpc.zookeeper.address");
+    ZK_ADDRESS("rpc.zookeeper.address"),
+    PORT("port");
     private final String propertyValue;
     RpcConfigPropertiesEnum(String propertyValue) {
         this.propertyValue = propertyValue;

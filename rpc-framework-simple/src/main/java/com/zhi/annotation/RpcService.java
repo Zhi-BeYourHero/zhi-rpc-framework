@@ -16,6 +16,30 @@ import java.lang.annotation.*;
 @Component
 public @interface RpcService {
     /**
+     * 分组名
+     */
+    String groupName() default "default";
+
+    /**
+     * 权重
+     */
+    int weight() default 1;
+
+    /**
+     * 应用名
+     */
+    String appKey() default "zrpc";
+
+    /**
+     * 工作线程
+     */
+    int workThreads() default 100;
+
+    /**
+     * 调用超时时间
+     */
+    int timeout() default 3000;
+    /**
      * Service version, default value is empty string
      */
     String version() default "";

@@ -31,6 +31,8 @@ public class ProviderFactoryBeanDefinitionParser extends AbstractSingleBeanDefin
             String workerThreads = element.getAttribute("workerThreads");
             String appKey = element.getAttribute("appKey");
             String groupName = element.getAttribute("groupName");
+            String group = element.getAttribute("group");
+            String version = element.getAttribute("version");
 
             bean.addPropertyValue("serverPort", Integer.parseInt(serverPort));
             bean.addPropertyValue("timeout", Integer.parseInt(timeOut));
@@ -46,6 +48,12 @@ public class ProviderFactoryBeanDefinitionParser extends AbstractSingleBeanDefin
             }
             if (StringUtils.isNotBlank(groupName)) {
                 bean.addPropertyValue("groupName", groupName);
+            }
+            if (StringUtils.isNotBlank(group)) {
+                bean.addPropertyValue("group", group);
+            }
+            if (StringUtils.isNotBlank(version)) {
+                bean.addPropertyValue("version", version);
             }
         } catch (Exception e) {
             log.error("ProviderFactoryBeanDefinitionParser error.", e);

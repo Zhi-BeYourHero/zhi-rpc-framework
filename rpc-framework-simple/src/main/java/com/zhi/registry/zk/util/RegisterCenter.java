@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Description
@@ -32,10 +33,10 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
 
     //服务提供者列表,Key:服务提供者接口  value:服务提供者服务方法列表
     /** 存放服务+服务提供者原信息，可能被多个服务者共同注册 */
-    private static final Map<String, List<ProviderService>> PROVIDER_SERVICE_MAP = Maps.newConcurrentMap();
+    private static final Map<String, List<ProviderService>> PROVIDER_SERVICE_MAP = new ConcurrentHashMap<>();
 
     //服务端ZK服务元信息,选择服务(第一次直接从ZK拉取,后续由ZK的监听机制主动更新)
-    private static final Map<String, List<ProviderService>> SERVICE_METADATA_MAP_4CONSUME = com.google.common.collect.Maps.newConcurrentMap();
+    private static final Map<String, List<ProviderService>> SERVICE_METADATA_MAP_4CONSUME = new ConcurrentHashMap<>();
 
     /** 以下内容是Zookeeper根据properties配置文件生成的 */
     private static final String ZK_SERVICE = PropertiesFileUtils.getZkService();
@@ -166,7 +167,7 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
      */
     private Map<String, List<ProviderService>> fetchOrUpdateServiceMetaData(String remoteAppKey, String groupName) {
         // 服务名称作为key、服务提供方列表作为值
-        final Map<String, List<ProviderService>> providerServiceMap = Maps.newConcurrentMap();
+        final Map<String, List<ProviderService>> providerServiceMap = new ConcurrentHashMap<>();
         //连接zk
         synchronized (RegisterCenter.class) {
             if (zkClient == null) {
@@ -197,7 +198,7 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
 
                 List<ProviderService> providerServiceList = providerServiceMap.get(serviceName);
                 if (providerServiceList == null) {
-                    providerServiceList = Lists.newArrayList();
+                    providerServiceList = new ArrayList<>();
                 }
 
                 // 服务调用者信息
@@ -263,7 +264,7 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
             // 如果第一次遍历到、则新建服务List放入，后续遍历到则拿出存在的List列表
             List<ProviderService> providerServiceList = currentServiceMetaDataMap.get(serviceItfKey);
             if (providerServiceList == null) {
-                providerServiceList = Lists.newArrayList();
+                providerServiceList = new ArrayList<>();
             }
 
             // 如果原来的服务现在还在最新的IP列表里，则放入服务List中，否则抛弃
@@ -315,13 +316,12 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
             //创建服务消费者节点
             String remoteAppKey = invoker.getRemoteAppKey();
             String groupName = invoker.getGroupName();
-            String serviceNode = invoker.getServiceItf().getName();
+            String serviceNode = invoker.getServiceItf().getName() + invoker.getGroup() + invoker.getVersion();
             String servicePath = ROOT_PATH + "/" + remoteAppKey + "/" + groupName + "/" + serviceNode + "/" + INVOKER_TYPE;
             exist = zkClient.exists(servicePath);
             if (!exist) {
                 zkClient.createPersistent(servicePath, true);
             }
-
             //创建当前服务器节点
             String localIp = IPUtil.localIp();
             String currentServiceIpNode = servicePath + "/" + localIp;
@@ -357,13 +357,12 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
             for (ProviderService provider : serviceMetaData) {
 
                 // 接口名
-                String serviceItfKey = provider.getServiceItf().getName();
+                String serviceItfKey = provider.getServiceItf().getName() + provider.getGroup() + provider.getVersion();
                 // 静态缓存中已有的服务
                 List<ProviderService> providers = PROVIDER_SERVICE_MAP.get(serviceItfKey);
-
                 // 第一次注册服务就新建List把自己放入
                 if (providers == null) {
-                    providers = Lists.newArrayList();
+                    providers = new ArrayList<>();
                 }
                 providers.add(provider);
 

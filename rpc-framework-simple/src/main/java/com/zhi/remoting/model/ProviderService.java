@@ -1,8 +1,7 @@
 package com.zhi.remoting.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -14,6 +13,10 @@ import java.lang.reflect.Method;
  */
 @Setter
 @Getter
+@Builder
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProviderService implements Serializable {
     /** 服务接口的类字面变量 */
     private Class<?> serviceItf;
@@ -36,6 +39,8 @@ public class ProviderService implements Serializable {
     private String appKey;
     //服务分组组名
     private String groupName;
+    private String group = "";
+    private String version = "";
 
     public ProviderService copy() {
         ProviderService providerService = new ProviderService();
@@ -50,6 +55,8 @@ public class ProviderService implements Serializable {
         providerService.setAppKey(appKey);
         providerService.setGroupName(groupName);
         providerService.setRpcServiceName(rpcServiceName);
+        providerService.setGroup(group);
+        providerService.setVersion(version);
         return providerService;
     }
 }

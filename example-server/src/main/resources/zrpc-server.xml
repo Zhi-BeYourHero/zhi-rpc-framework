@@ -15,7 +15,8 @@
                         appKey="zrpc"
                         workerThreads="100"
                         serverPort="9092"
-                        timeout="600"/>
+                        timeout="600"
+    />
     <!--                        groupName="default"-->
 
 </beans>

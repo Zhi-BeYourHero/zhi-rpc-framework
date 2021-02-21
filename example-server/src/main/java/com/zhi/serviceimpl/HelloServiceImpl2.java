@@ -4,8 +4,6 @@ import com.zhi.annotation.RpcService;
 import com.zhi.api.Hello;
 import com.zhi.api.HelloService;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @Description
@@ -13,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * @Date 2020-10-10 11:41
  */
 @Slf4j
-@RpcService(group = "test21", version = "version11")
+//@RpcService
 public class HelloServiceImpl2 implements HelloService {
 
     static {

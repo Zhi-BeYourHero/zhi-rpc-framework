@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class HelloController {
 
-    @RpcReference(version = "version3", group = "test3")
+//    @RpcReference(version = "version66", group = "test77")
+    @RpcReference
     private HelloService helloService;
 
     public void test() {

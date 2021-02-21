@@ -12,6 +12,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -59,17 +60,17 @@ public class ProviderFactoryBean implements FactoryBean, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
+//        CountDownLatch countDownLatch = new CountDownLatch(1);
         Thread thread = new Thread(() -> {
             // 在这个生产者factory bean在spring中被注入依赖后，启动netty并向Zookeeper注册服务
             // Step1：启动Netty服务端监听在服务端口上
             // 其中netty中有三个处理器：`NettyDecoderHandler`、`NettyEncoderHandler`、`NettyServerInvokeHandler`
             // 前面两个处理解码和编码，最后一个处理服务端调用逻辑
-            NettyServer.singleton().start(countDownLatch, Integer.parseInt(serverPort));
+            NettyServer.singleton().start(Integer.parseInt(serverPort));
         });
         thread.start();
-        // 等待服务发布完
-        countDownLatch.await();
+        // 等待NettyServer启动起来... 其实可以不用等
+//        countDownLatch.await();
         // 生成服务方发布的服务信息
         List<ProviderService> providerServiceList = buildProviderServiceInfos();
 
@@ -85,7 +86,7 @@ public class ProviderFactoryBean implements FactoryBean, InitializingBean {
      * @return
      */
     private List<ProviderService> buildProviderServiceInfos() {
-        List<ProviderService> providerList = Lists.newArrayList();
+        List<ProviderService> providerList = new ArrayList<>();
         Method[] methods = serviceObject.getClass().getDeclaredMethods();
         // 为每一个方法都生成对应的ProviderService...
         for (Method method : methods) {

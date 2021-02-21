@@ -41,7 +41,7 @@ public class NettyServer {
         serviceProvider.publishService(service, rpcServiceProperties);
     }
     @SneakyThrows
-    public void start(CountDownLatch countDownLatch, final int port) {
+    public void start(final int port) {
         //这个钩子的添加从start()方法末尾改到前面，然后又让类实现InitializingBean的afterPropertiesSet方法中调用->最后又放到头...当服务端(provider)关闭时候做一些事情，比如说取消注册所有服务
         //由此看出Guide🤔了很多，但放在start确实是最佳实践
         CustomShutdownHook.getCustomShutdownHook().clearAll();
@@ -81,7 +81,7 @@ public class NettyServer {
             //绑定端口，同步等待绑定成功
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
             log.info("NettyServer启动完成：");
-            countDownLatch.countDown();
+//            countDownLatch.countDown();
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {

@@ -143,7 +143,7 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
 
     private static volatile RevokerProxyBeanFactory singleton;
 
-    public static RevokerProxyBeanFactory singleton(Class<?> targetInterface, int consumeTimeout, String clusterStrategy, String failMode) throws Exception {
+    public static RevokerProxyBeanFactory singleton(Class<?> targetInterface, int consumeTimeout, String clusterStrategy, String failMode) {
         if (null == singleton) {
             synchronized (RevokerProxyBeanFactory.class) {
                 if (null == singleton) {

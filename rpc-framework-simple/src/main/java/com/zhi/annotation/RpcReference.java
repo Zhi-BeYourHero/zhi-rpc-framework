@@ -1,5 +1,7 @@
 package com.zhi.annotation;
 
+import com.zhi.cluster.failmode.FailMode;
+
 import java.lang.annotation.*;
 
 /**
@@ -13,7 +15,20 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Inherited
 public @interface RpcReference {
-
+    int timeout() default 3000;
+    /**
+     * 负载均衡策略
+     */
+    String clusterStrategy() default "Polling";
+    /**
+     * 服务提供者唯一标识
+     */
+    String remoteAppKey() default "zrpc";
+    /**
+     * 服务分组组名
+     */
+    String groupName() default "default";
+    String failMode() default "failFast";
     /**
      * Service version, default value is empty string
      */
@@ -23,4 +38,5 @@ public @interface RpcReference {
      * Service group, default value is empty string
      */
     String group() default "";
+
 }

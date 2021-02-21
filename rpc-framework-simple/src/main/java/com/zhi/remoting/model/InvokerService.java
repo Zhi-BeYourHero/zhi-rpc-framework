@@ -23,4 +23,6 @@ public class InvokerService implements Serializable {
     private String remoteAppKey;
     //服务分组组名
     private String groupName = "default";
+    private String group = "";
+    private String version = "";
 }

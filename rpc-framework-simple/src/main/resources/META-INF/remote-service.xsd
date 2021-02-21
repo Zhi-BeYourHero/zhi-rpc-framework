@@ -20,6 +20,8 @@
                     <xsd:attribute name="workerThreads" type="xsd:int" use="optional"/>
                     <xsd:attribute name="appKey" type="xsd:string" use="required"/>
                     <xsd:attribute name="groupName" type="xsd:string" use="optional"/>
+                    <xsd:attribute name="group" type="xsd:string" use="optional"/>
+                    <xsd:attribute name="version" type="xsd:string" use="optional"/>
                 </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>
