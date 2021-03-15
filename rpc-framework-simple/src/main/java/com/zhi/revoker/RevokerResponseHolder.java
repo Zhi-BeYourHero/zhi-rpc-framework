@@ -24,25 +24,22 @@ public class RevokerResponseHolder {
 
     static {
         // 删除超时未获取到结果的key,防止内存泄露
-        REMOVE_EXPIRE_KEY_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                // 每10ms检验一次是否过期
-                while (true) {
-                    try {
-                        for (Map.Entry<String, RpcResponseWrapper> entry : RESPONSE_MAP.entrySet()) {
-                            boolean isExpire = entry.getValue().isExpire();
-                            if (isExpire) {
-                                RESPONSE_MAP.remove(entry.getKey());
-                            }
-                            // 10毫秒一次
-                            Thread.sleep(10);
+        REMOVE_EXPIRE_KEY_EXECUTOR.execute(() -> {
+            // 每10ms检验一次是否过期
+            while (true) {
+                try {
+                    for (Map.Entry<String, RpcResponseWrapper> entry : RESPONSE_MAP.entrySet()) {
+                        boolean isExpire = entry.getValue().isExpire();
+                        if (isExpire) {
+                            RESPONSE_MAP.remove(entry.getKey());
                         }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
+                        // 10毫秒一次
+                        Thread.sleep(10);
                     }
-
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
+
             }
         });
     }
@@ -65,7 +62,7 @@ public class RevokerResponseHolder {
         long currentTime = System.currentTimeMillis();
         RpcResponseWrapper responseWrapper = RESPONSE_MAP.get(response.getRequestId());
         responseWrapper.setResponseTime(currentTime);
-        // !!!add背后调用offer、如果队列满了直接返回false，而不是put会阻塞直到有可用空间
+        // !!!add背后调用offer、如果队列满了，则抛出异常IllegalStateException("Queue full"); 而不是put会阻塞直到有可用空间
         responseWrapper.getResponseQueue().add(response);
         RESPONSE_MAP.put(response.getRequestId(), responseWrapper);
     }

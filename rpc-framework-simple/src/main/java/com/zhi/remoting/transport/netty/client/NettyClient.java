@@ -1,6 +1,5 @@
 package com.zhi.remoting.transport.netty.client;
 
-import com.google.common.collect.Lists;
 import com.zhi.remoting.transport.netty.codec.RpcMessageDecoder;
 import com.zhi.remoting.transport.netty.codec.RpcMessageEncoder;
 import io.netty.bootstrap.Bootstrap;
@@ -16,10 +15,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**

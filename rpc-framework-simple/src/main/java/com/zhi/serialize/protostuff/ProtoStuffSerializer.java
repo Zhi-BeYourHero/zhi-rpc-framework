@@ -18,7 +18,6 @@ public class ProtoStuffSerializer implements Serializer {
     private static Map<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<>();
     private static Objenesis objenesis = new ObjenesisStd(true);
 
-    @SuppressWarnings("unchecked")
     private static <T> Schema<T> getSchema(Class<T> cls) {
         Schema<T> schema = (Schema<T>) cachedSchema.get(cls);
         if (schema == null) {
@@ -28,7 +27,7 @@ public class ProtoStuffSerializer implements Serializer {
         return schema;
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
     public <T> byte[] serialize(T obj) {
         Class<T> cls = (Class<T>) obj.getClass();
         LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
@@ -42,6 +41,7 @@ public class ProtoStuffSerializer implements Serializer {
         }
     }
 
+    @Override
     public <T> T deserialize(byte[] data, Class<T> cls) {
         try {
             T message = (T) objenesis.newInstance(cls);

@@ -30,7 +30,6 @@
         <module>hello-service-api</module>
         <module>rpc-framework-common</module>
         <module>rpc-framework-simple</module>
-        <module>rpc-framework-spring</module>
     </modules>
     <dependencies>
         <!-- lombok -->

@@ -1,10 +1,5 @@
 package com.zhi.remoting.transport.netty.server;
 
-import com.zhi.config.CustomShutdownHook;
-import com.zhi.entity.RpcServiceProperties;
-import com.zhi.factory.SingletonFactory;
-import com.zhi.provider.ServiceProvider;
-import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.remoting.transport.netty.codec.RpcMessageDecoder;
 import com.zhi.remoting.transport.netty.codec.RpcMessageEncoder;
 import io.netty.bootstrap.ServerBootstrap;
@@ -19,7 +14,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import java.net.InetAddress;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,21 +24,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class NettyServer {
-    //TODO 话说为什么这个变量应该是final的？。。。 然后又删了,又加回去了额
     public static final int PORT = 9998;
-    private final ServiceProvider serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
     private static final NettyServer NETTY_SERVER = new NettyServer();
-    public void registerService(Object service) {
-        serviceProvider.publishService(service);
-    }
-    public void registerService(Object service, RpcServiceProperties rpcServiceProperties) {
-        serviceProvider.publishService(service, rpcServiceProperties);
-    }
     @SneakyThrows
     public void start(final int port) {
-        //这个钩子的添加从start()方法末尾改到前面，然后又让类实现InitializingBean的afterPropertiesSet方法中调用->最后又放到头...当服务端(provider)关闭时候做一些事情，比如说取消注册所有服务
-        //由此看出Guide🤔了很多，但放在start确实是最佳实践
-        CustomShutdownHook.getCustomShutdownHook().clearAll();
         String host = InetAddress.getLocalHost().getHostAddress();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -81,7 +64,6 @@ public class NettyServer {
             //绑定端口，同步等待绑定成功
             ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
             log.info("NettyServer启动完成：");
-//            countDownLatch.countDown();
             //等待服务端监听端口关闭
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {

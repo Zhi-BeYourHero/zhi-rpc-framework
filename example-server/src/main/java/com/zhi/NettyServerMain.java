@@ -1,3 +1,5 @@
+package com.zhi;
+
 import com.zhi.annotation.RpcScan;
 import com.zhi.enums.RpcConfigPropertiesEnum;
 import com.zhi.remoting.transport.netty.server.NettyServer;
@@ -15,12 +17,8 @@ import java.util.Properties;
 @RpcScan(basePackage = {"com.zhi.serviceimpl"})
 public class NettyServerMain {
     public static void main(String[] args) {
-//        HelloService helloService = new HelloServiceImpl();
         new AnnotationConfigApplicationContext(NettyServerMain.class);
         NettyServer nettyServer = new NettyServer();
-//        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder()
-//                .group("test3").version("version3").build();
-//        nettyServer.registerService(helloService, rpcServiceProperties);
         Properties properties = PropertiesFileUtils.readPropertiesFile(RpcConfigPropertiesEnum.RPC_CONFIG_PATH.getPropertyValue());
         String serverPort = properties.getProperty(RpcConfigPropertiesEnum.PORT.getPropertyValue());
         nettyServer.start(Integer.parseInt(serverPort));

@@ -1,2 +1,0 @@
-zk=com.zhi.registry.zk.ZkServiceDiscovery
-nacos=com.zhi.registry.nacos.NacosServiceDiscovery

@@ -59,7 +59,7 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
         //根据软负载策略,从服务提供者列表选取本次调用的服务提供者
         ClusterStrategy clusterStrategyService = ClusterEngine.queryClusterStrategy(clusterStrategy);
         ProviderService providerService = clusterStrategyService.select(providerServices);
-        System.out.println("本地调用的服务提供者IP和Port：" + providerService.getServerIp() + ":" + providerService.getServerPort());
+        log.info("本地调用的服务提供者IP和Port：" + providerService.getServerIp() + ":" + providerService.getServerPort());
         //复制一份服务提供者信息
         ProviderService newProvider = providerService.copy();
         //设置本次调用服务的方法以及接口
@@ -122,7 +122,7 @@ public class RevokerProxyBeanFactory  implements InvocationHandler {
                 while (curProviderService == providerService) {
                     curProviderService = clusterStrategyService.select(providerServices);
                 }
-                System.out.println("本地调用的服务提供者IP和Port：" + curProviderService.getServerIp() + ":" + curProviderService.getServerPort());
+                log.info("本地调用的服务提供者IP和Port：" + curProviderService.getServerIp() + ":" + curProviderService.getServerPort());
                 Future<RpcResponse> responseFuture = fixedThreadPool.submit(RevokerServiceCallable.of(inetSocketAddress, request));
                 RpcResponse response = responseFuture.get(request.getInvokeTimeout(), TimeUnit.MILLISECONDS);
                 if (response != null) {

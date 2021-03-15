@@ -104,7 +104,7 @@ public class RevokerServiceCallable implements Callable<RpcResponse> {
             ChannelFuture channelFuture = channel.writeAndFlush(rpcMessage);
             // syncUninterruptibly()让主线程同步等待子线程结果。
             channelFuture.syncUninterruptibly();
-            System.out.println("已经发送请求");
+            log.info("已经发送请求");
             //从返回结果容器中获取返回结果,同时设置等待超时时间为invokeTimeout
             long invokeTimeout = request.getInvokeTimeout();
             return RevokerResponseHolder.getValue(request.getRequestId(), invokeTimeout);

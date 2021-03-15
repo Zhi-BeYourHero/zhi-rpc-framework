@@ -1,20 +1,19 @@
 package com.zhi.provider;
 
-import com.google.common.collect.Lists;
 import com.zhi.registry.IRegisterCenter4Provider;
 import com.zhi.registry.zk.util.RegisterCenter;
 import com.zhi.remoting.model.ProviderService;
 import com.zhi.remoting.transport.netty.server.NettyServer;
+import com.zhi.utils.concurrent.threadpool.ThreadPoolFactoryUtils;
 import com.zhi.utils.ip.IPUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @Description 服务Bean发布入口
@@ -60,23 +59,15 @@ public class ProviderFactoryBean implements FactoryBean, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-//        CountDownLatch countDownLatch = new CountDownLatch(1);
-        Thread thread = new Thread(() -> {
-            // 在这个生产者factory bean在spring中被注入依赖后，启动netty并向Zookeeper注册服务
-            // Step1：启动Netty服务端监听在服务端口上
-            // 其中netty中有三个处理器：`NettyDecoderHandler`、`NettyEncoderHandler`、`NettyServerInvokeHandler`
-            // 前面两个处理解码和编码，最后一个处理服务端调用逻辑
-            NettyServer.singleton().start(Integer.parseInt(serverPort));
-        });
-        thread.start();
+        ExecutorService threadPool = ThreadPoolFactoryUtils.createCustomThreadPoolIfAbsent(ThreadPoolFactoryUtils.PROVIDER_NETTY_SEVER_THREAD_POOL);
+        // 在这个生产者factory bean在spring中被注入依赖后，启动netty并向Zookeeper注册服务
+        // Step1：启动Netty服务端监听在服务端口上
+        threadPool.execute(() -> NettyServer.singleton().start(Integer.parseInt(serverPort)));
         // 等待NettyServer启动起来... 其实可以不用等
-//        countDownLatch.await();
         // 生成服务方发布的服务信息
         List<ProviderService> providerServiceList = buildProviderServiceInfos();
-
         // 初始化Zookeeper的单例包装
         IRegisterCenter4Provider registerCenter4Provider = RegisterCenter.singleton();
-
         // 初始化Zookeeper的链接并且将服务信息`providerServiceList`注册到ZK结点上并且监听变化
         registerCenter4Provider.registerProvider(providerServiceList);
     }

@@ -14,6 +14,7 @@ import org.w3c.dom.Element;
  */
 @Slf4j
 public class RevokerFactoryBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
+    @Override
     protected Class getBeanClass(Element element) {
         return RevokerFactoryBean.class;
     }

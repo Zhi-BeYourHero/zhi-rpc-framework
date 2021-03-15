@@ -1,10 +1,10 @@
 package com.zhi.remoting.transport.netty.client;
 
 import com.zhi.enums.SerializableTypeEnum;
-import com.zhi.factory.SingletonFactory;
 import com.zhi.remoting.constants.RpcConstants;
 import com.zhi.remoting.dto.RpcMessage;
 import com.zhi.remoting.dto.RpcResponse;
+import com.zhi.revoker.NettyChannelPoolFactory;
 import com.zhi.revoker.RevokerResponseHolder;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleState;
@@ -12,6 +12,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Description 自定义客户端 ChannelHandler 来处理服务端发过来的数据
@@ -23,12 +25,7 @@ import java.net.InetSocketAddress;
  */
 @Slf4j
 public class NettyClientHandler extends ChannelInboundHandlerAdapter {
-    private final UnprocessedRequests unprocessedRequests;
-    private final ChannelProvider channelProvider;
-    public NettyClientHandler() {
-        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
-        this.channelProvider = SingletonFactory.getInstance(ChannelProvider.class);
-    }
+
     /**
      * 读取服务端传输的消息
      */
@@ -46,7 +43,6 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
                     RpcResponse<Object> rpcResponse = (RpcResponse<Object>) tmp.getData();
                     // 将Netty异步返回的结果存入阻塞队列,以便调用端同步获取(同步服务、而netty是NIO、异步返回的结果，因此根据配置的超时时间来判断结果是否可用)
                     RevokerResponseHolder.putResultValue(rpcResponse);
-//                    unprocessedRequests.complete(rpcResponse);
                 }
             }
         } finally {
@@ -65,7 +61,19 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
             //如果是写空闲
             if (state == IdleState.WRITER_IDLE) {
                 log.info("write idle happen [{}]", ctx.channel().remoteAddress());
-                Channel channel = channelProvider.get((InetSocketAddress) ctx.channel().remoteAddress());
+                InetSocketAddress inetSocketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+                BlockingQueue<Channel> blockingQueue = NettyChannelPoolFactory.channelPoolFactoryInstance().acquire(inetSocketAddress);
+                Channel channel = blockingQueue.poll(100, TimeUnit.MILLISECONDS);
+                //若获取的channel通道已经不可用,则重新获取一个
+                while (channel == null || !channel.isOpen() || !channel.isActive() || !channel.isWritable()) {
+                    log.warn("----------retry get new Channel------------");
+                    channel = blockingQueue.poll(100, TimeUnit.MILLISECONDS);
+                    if (channel == null) {
+                        // 若队列中没有可用的Channel,则重新注册一个Channel
+                        // 若注册失败，直接抛NPE，会进入catch中，不太合适(后期可以改造下)
+                        channel = NettyChannelPoolFactory.channelPoolFactoryInstance().registerChannel(inetSocketAddress);
+                    }
+                }
                 RpcMessage rpcMessage = new RpcMessage();
                 rpcMessage.setCodec(SerializableTypeEnum.KRYO.getCode());
                 rpcMessage.setMessageType(RpcConstants.HEARTBEAT_REQUEST_TYPE);

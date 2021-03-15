@@ -1,6 +1,5 @@
 package com.zhi.registry.zk.util;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zhi.registry.IRegisterCenter4Governance;
@@ -10,6 +9,7 @@ import com.zhi.remoting.model.InvokerService;
 import com.zhi.remoting.model.ProviderService;
 import com.zhi.utils.file.PropertiesFileUtils;
 import com.zhi.utils.ip.IPUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.SerializableSerializer;
@@ -19,15 +19,18 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @Description
  * @Author WenZhiLuo
  * @Date 2021-02-18 21:04
  */
+@Slf4j
 public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter4Invoker, IRegisterCenter4Governance {
     private static RegisterCenter registerCenter = new RegisterCenter();
 
@@ -226,14 +229,9 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
                 @Override
                 public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
                     if (currentChilds == null) {
-                        currentChilds = Lists.newArrayList();
+                        currentChilds = new ArrayList<>();
                     }
-                    currentChilds = Lists.newArrayList(Lists.transform(currentChilds, new Function<String, String>() {
-                        @Override
-                        public String apply(String input) {
-                            return StringUtils.split(input, "|")[0];
-                        }
-                    }));
+                    currentChilds = currentChilds.stream().map(input -> StringUtils.split(input, "|")[0]).collect(Collectors.toList());
                     refreshServiceMetaDataMap(currentChilds);
                 }
             });
@@ -425,22 +423,15 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
 
                 // 监听注册服务的变化,同时更新数据到本地缓存
                 // 在这个服务节点上注册监听器(不同服务提供方可能会引起`服务名+分组名`结点的变化)
-                zkClient.subscribeChildChanges(servicePath, new IZkChildListener() {
-                    @Override
-                    public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-                        if (currentChilds == null) {
-                            currentChilds = Lists.newArrayList();
-                        }
-
-                        //存活的服务IP列表
-                        List<String> activityServiceIpList = Lists.newArrayList(Lists.transform(currentChilds, new Function<String, String>() {
-                            @Override
-                            public String apply(String input) {
-                                return StringUtils.split(input, "|")[0];
-                            }
-                        }));
-                        refreshActivityService(activityServiceIpList);
+                zkClient.subscribeChildChanges(servicePath, (parentPath, currentChilds) -> {
+                    if (currentChilds == null) {
+                        currentChilds = new ArrayList<>();
                     }
+                    //这个currentChilds列表当前变化后存在的返回
+                    log.info("监听到节点变化：{}", currentChilds);
+                    //存活的服务IP列表
+                    List<String> activityServiceIpList = currentChilds.stream().map(currentChild -> StringUtils.split(currentChild, "|")[0]).collect(Collectors.toList());
+                    refreshActivityService(activityServiceIpList);
                 });
             }
         }
@@ -453,19 +444,19 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
      */
     private void refreshActivityService(List<String> serviceIpList) {
         if (serviceIpList == null) {
-            serviceIpList = Lists.newArrayList();
+            serviceIpList = new ArrayList<>();
         }
 
-        Map<String, List<ProviderService>> currentServiceMetaDataMap = Maps.newHashMap();
+        Map<String, List<ProviderService>> currentServiceMetaDataMap = new HashMap<>();
         for (Map.Entry<String, List<ProviderService>> entry : PROVIDER_SERVICE_MAP.entrySet()) {
             String key = entry.getKey();
             List<ProviderService> providerServices = entry.getValue();
 
             List<ProviderService> serviceMetaDataModelList = currentServiceMetaDataMap.get(key);
             if (serviceMetaDataModelList == null) {
-                serviceMetaDataModelList = Lists.newArrayList();
+                serviceMetaDataModelList = new ArrayList<>();
             }
-
+            //新增就添加，不在的就删除，
             for (ProviderService serviceMetaData : providerServices) {
                 if (serviceIpList.contains(serviceMetaData.getServerIp())) {
                     serviceMetaDataModelList.add(serviceMetaData);
@@ -474,7 +465,7 @@ public class RegisterCenter implements IRegisterCenter4Provider, IRegisterCenter
             currentServiceMetaDataMap.put(key, serviceMetaDataModelList);
         }
         PROVIDER_SERVICE_MAP.clear();
-        System.out.println("currentServiceMetaDataMap," + currentServiceMetaDataMap.toString());
+        log.info("currentServiceMetaDataMap," + currentServiceMetaDataMap.toString());
         PROVIDER_SERVICE_MAP.putAll(currentServiceMetaDataMap);
     }
 

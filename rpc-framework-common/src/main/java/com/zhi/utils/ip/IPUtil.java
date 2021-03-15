@@ -111,7 +111,7 @@ public class IPUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        //System.out.println(localIp());
+//        System.out.println(localIp());
         System.out.println(getRealIp());
         System.out.println(getHostFirstIp());
     }

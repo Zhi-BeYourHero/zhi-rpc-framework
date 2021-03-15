@@ -19,6 +19,7 @@ public final class ThreadPoolFactoryUtils {
      * value: threadPool
      */
     private static final Map<String, ExecutorService> THREAD_POOLS = new ConcurrentHashMap<>();
+    public static final String PROVIDER_NETTY_SEVER_THREAD_POOL = "PROVIDER_NETTY_SEVER_THREAD_POOL";
     private ThreadPoolFactoryUtils() {
     }
     public static ExecutorService createCustomThreadPoolIfAbsent(String threadNamePrefix) {

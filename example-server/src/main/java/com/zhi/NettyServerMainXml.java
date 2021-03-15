@@ -1,5 +1,6 @@
 package com.zhi;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -7,11 +8,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @Author WenZhiLuo
  * @Date 2021-02-20 12:08
  */
+@Slf4j
 public class NettyServerMainXml {
     public static void main(String[] args) throws Exception {
 
         //发布服务
-        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("zrpc-server.xml");
-        System.out.println(" 服务发布完成");
+        new ClassPathXmlApplicationContext("zrpc-server.xml");
+        log.info(" 服务发布完成");
     }
 }

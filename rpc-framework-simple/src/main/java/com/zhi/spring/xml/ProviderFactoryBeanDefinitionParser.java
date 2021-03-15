@@ -15,6 +15,7 @@ import org.w3c.dom.Element;
  */
 @Slf4j
 public class ProviderFactoryBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
+    @Override
     protected Class getBeanClass(Element element) {
         return ProviderFactoryBean.class;
     }

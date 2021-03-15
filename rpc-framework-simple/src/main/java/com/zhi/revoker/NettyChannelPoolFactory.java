@@ -1,6 +1,5 @@
 package com.zhi.revoker;
 
-import com.google.common.collect.Maps;
 import com.zhi.remoting.model.ProviderService;
 import com.zhi.remoting.transport.netty.client.NettyClient;
 import com.zhi.utils.file.PropertiesFileUtils;

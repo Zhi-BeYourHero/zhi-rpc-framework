@@ -2,19 +2,12 @@ package com.zhi.spring;
 
 import com.zhi.annotation.RpcReference;
 import com.zhi.annotation.RpcService;
-import com.zhi.entity.RpcServiceProperties;
 import com.zhi.enums.RpcConfigPropertiesEnum;
-import com.zhi.extension.ExtensionLoader;
-import com.zhi.factory.SingletonFactory;
-import com.zhi.provider.ServiceProvider;
-import com.zhi.provider.ServiceProviderImpl;
-import com.zhi.proxy.RpcClientProxy;
 import com.zhi.registry.IRegisterCenter4Invoker;
 import com.zhi.registry.IRegisterCenter4Provider;
 import com.zhi.registry.zk.util.RegisterCenter;
 import com.zhi.remoting.model.InvokerService;
 import com.zhi.remoting.model.ProviderService;
-import com.zhi.remoting.transport.ClientTransport;
 import com.zhi.revoker.NettyChannelPoolFactory;
 import com.zhi.revoker.RevokerProxyBeanFactory;
 import com.zhi.utils.file.PropertiesFileUtils;
@@ -25,7 +18,6 @@ import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,12 +34,6 @@ import java.util.Properties;
 @Component
 public class SpringBeanPostProcessor implements BeanPostProcessor {
     private IRegisterCenter4Provider registerCenter4Provider = RegisterCenter.singleton();
-    private final ServiceProvider serviceProvider;
-    private final ClientTransport rpcClient;
-    public SpringBeanPostProcessor() {
-        serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
-        this.rpcClient = ExtensionLoader.getExtensionLoader(ClientTransport.class).getExtension("nettyClientTransport");
-    }
 
     /**
      * 将@RpcService注解标注的类进行注册
@@ -89,7 +75,6 @@ public class SpringBeanPostProcessor implements BeanPostProcessor {
             }
             // 初始化Zookeeper的链接并且将服务信息`providerServiceList`注册到ZK结点上并且监听变化
             registerCenter4Provider.registerProvider(providerServiceList);
-//            serviceProvider.publishService(bean, rpcServiceProperties);
         }
         return bean;
     }
@@ -132,16 +117,6 @@ public class SpringBeanPostProcessor implements BeanPostProcessor {
 
                 // 将消费者信息注册到注册中心
                 registerCenter4Consumer.registerInvoker(invoker);
-//                RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder()
-//                        .group(rpcReference.group()).version(rpcReference.version()).build();
-//                RpcClientProxy rpcClientProxy = new RpcClientProxy(rpcClient, rpcServiceProperties);
-//                Object clientProxy = rpcClientProxy.getProxy(declaredField.getType());
-//                declaredField.setAccessible(true);
-//                try {
-//                    declaredField.set(bean, clientProxy);
-//                } catch (IllegalAccessException e) {
-//                    e.printStackTrace();
-//                }
             }
 
         }

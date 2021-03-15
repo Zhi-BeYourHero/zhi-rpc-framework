@@ -10,11 +10,11 @@
     <ZrpcServer:service id="helloServiceRegister"
                         interface="com.zhi.api.HelloService"
                         ref="helloService"
-                        groupName="group1"
+                        groupName="default"
                         weight="2"
                         appKey="zrpc"
                         workerThreads="100"
-                        serverPort="9092"
+                        serverPort="9093"
                         timeout="600"
     />
     <!--                        groupName="default"-->

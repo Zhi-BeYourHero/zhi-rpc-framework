@@ -3,6 +3,7 @@ package com.zhi;
 import com.zhi.annotation.RpcReference;
 import com.zhi.api.Hello;
 import com.zhi.api.HelloService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,9 +12,9 @@ import org.springframework.stereotype.Component;
  * @Date 2020-11-18 22:20
  */
 @Component
+@Slf4j
 public class HelloController {
 
-//    @RpcReference(version = "version66", group = "test77")
     @RpcReference
     private HelloService helloService;
 
@@ -22,8 +23,7 @@ public class HelloController {
         //如需使用 assert 断言，需要在 VM options 添加参数：-ea
         assert "Hello description is 222".equals(hello);
         for (int i = 0; i < 10; i++) {
-            System.out.println(helloService.hello(new Hello("111", "222")));
-            System.out.println("1123");
+            log.info("Client 发起调用， 返回结果为：{}", helloService.hello(new Hello("111", "222")));
         }
     }
 }

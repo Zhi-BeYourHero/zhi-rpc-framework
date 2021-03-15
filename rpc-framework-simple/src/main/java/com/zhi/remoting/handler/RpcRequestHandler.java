@@ -1,24 +1,16 @@
 package com.zhi.remoting.handler;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Maps;
-import com.zhi.entity.RpcServiceProperties;
-import com.zhi.factory.SingletonFactory;
 import com.zhi.registry.IRegisterCenter4Provider;
 import com.zhi.registry.zk.util.RegisterCenter;
 import com.zhi.remoting.dto.RpcRequest;
 import com.zhi.exception.RpcException;
-import com.zhi.provider.ServiceProvider;
-import com.zhi.provider.ServiceProviderImpl;
 import com.zhi.remoting.model.ProviderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -32,30 +24,20 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class RpcRequestHandler {
-    //TODO 使用static初始化资源的好处，为什么Guide老哥一下子用又一下子不用?
-    private final ServiceProvider serviceProvider;
-    //服务端限流
-    private static final Map<String, Semaphore> SERVICE_KEY_SEMAPHORE_MAP = Maps.newConcurrentMap();
-    public RpcRequestHandler() {
-        serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
-    }
+    /**
+     * 服务端限流
+     */
+    private static final Map<String, Semaphore> SERVICE_KEY_SEMAPHORE_MAP = new ConcurrentHashMap<>();
     /**
      * 处理rpcRequest：调用对应的方法，并返回方法执行结果
      */
     public Object handle(RpcRequest rpcRequest) {
-        RpcServiceProperties rpcServiceProperties = RpcServiceProperties.builder()
-                .group(rpcRequest.getGroup()).version(rpcRequest.getVersion())
-                .serviceName(rpcRequest.getInterfaceName()).build();
-        //通过注册中心获取到目标类（客户端需要调用类）
-//        Object service = serviceProvider.getService(rpcServiceProperties);
-//        return invokeTargetMethod(rpcRequest, service);
         return invokeTargetMethod(rpcRequest);
     }
 
     /**
      * 根据 rpcRequest 和 service 对象特定的方法并返回结果
      * @param rpcRequest 客户端请求
-//     * @param service    提供服务的对象
      * @return 目标方法执行的结果
      */
     private Object invokeTargetMethod(RpcRequest rpcRequest) {
@@ -97,12 +79,8 @@ public class RpcRequestHandler {
             // 限流令牌，true代表获得
             boolean acquire;
             // 找到要调用的目标服务
-            ProviderService localProviderCache = Collections2.filter(localProviderCaches, new Predicate<ProviderService>() {
-                @Override
-                public boolean apply(ProviderService input) {
-                    return StringUtils.equals(input.getServiceMethod().getName(), methodName);
-                }
-            }).iterator().next();
+            ProviderService localProviderCache = localProviderCaches.stream()
+                    .filter(providerService -> StringUtils.equals(providerService.getServiceMethod().getName(), methodName)).iterator().next();
             Object service = localProviderCache.getServiceObject();
             // !!!最重要的核心是在服务提供方这里使用反射调用服务。
             //利用反射发起服务调用
@@ -112,10 +90,8 @@ public class RpcRequestHandler {
             if (acquire) {
                 result = method.invoke(service, rpcRequest.getParameters());
             }
-//            Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
-//            result = method.invoke(service, rpcRequest.getParameters());
             log.info("service:[{}] successful invoke method:[{}]", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
-        } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException | InterruptedException e) {
+        } catch (Exception e) {
             throw new RpcException(e.getMessage(), e);
         }
         return result;
