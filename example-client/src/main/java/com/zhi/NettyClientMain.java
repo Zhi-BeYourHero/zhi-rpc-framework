@@ -14,5 +14,6 @@ public class NettyClientMain {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(NettyClientMain.class);
         HelloController helloController = (HelloController) applicationContext.getBean("helloController");
         helloController.test();
+        helloController.queryAllProviderAndConsumer();
     }
 }

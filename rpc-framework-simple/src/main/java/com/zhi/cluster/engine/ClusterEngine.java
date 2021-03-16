@@ -13,14 +13,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ClusterEngine {
 
+    private ClusterEngine(){}
+
     private static final Map<ClusterStrategyEnum, ClusterStrategy> CLUSTER_STRATEGY_MAP = new ConcurrentHashMap<>();
 
     static {
-        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.Random, new RandomClusterStrategyImpl());
-        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.WeightRandom, new WeightRandomClusterStrategyImpl());
-        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.Polling, new PollingClusterStrategyImpl());
-        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.WeightPolling, new WeightPollingClusterStrategyImpl());
-        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.Hash, new HashClusterStrategyImpl());
+        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.RANDOM, new RandomClusterStrategyImpl());
+        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.WEIGHT_RANDOM, new WeightRandomClusterStrategyImpl());
+        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.POLLING, new PollingClusterStrategyImpl());
+        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.WEIGHT_POLLING, new WeightPollingClusterStrategyImpl());
+        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.HASH, new HashClusterStrategyImpl());
+        CLUSTER_STRATEGY_MAP.put(ClusterStrategyEnum.CONSISTENT_HASH, new ConsistentHashClusterStrategyImpl());
     }
 
     public static ClusterStrategy queryClusterStrategy(String clusterStrategy) {

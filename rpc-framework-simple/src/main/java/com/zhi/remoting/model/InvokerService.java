@@ -2,6 +2,8 @@ package com.zhi.remoting.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
@@ -12,6 +14,7 @@ import java.lang.reflect.Method;
  */
 @Setter
 @Getter
+@ToString
 public class InvokerService implements Serializable {
     private Class<?> serviceItf;
     private Object serviceObject;

@@ -10,7 +10,7 @@
                           interface="com.zhi.api.HelloService"
                           clusterStrategy="Polling"
                           remoteAppKey="zrpc"
-                          groupName="group1"
+                          groupName="default"
                           failMode="failOver"
                           timeout="3000"/>
 </beans>

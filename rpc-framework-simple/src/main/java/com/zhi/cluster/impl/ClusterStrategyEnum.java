@@ -9,15 +9,18 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum ClusterStrategyEnum {
     //随机算法
-    Random("Random"),
+    RANDOM("Random"),
     //权重随机算法
-    WeightRandom("WeightRandom"),
+    WEIGHT_RANDOM("WeightRandom"),
     //轮询算法
-    Polling("Polling"),
+    POLLING("Polling"),
     //权重轮询算法
-    WeightPolling("WeightPolling"),
+    WEIGHT_POLLING("WeightPolling"),
     //源地址hash算法
-    Hash("Hash");
+    HASH("Hash"),
+    //一致性哈希算法
+    CONSISTENT_HASH("ConsistentHash"),
+    ;
 
     ClusterStrategyEnum(String code) {
         this.code = code;
